@@ -5,8 +5,8 @@ from pathlib import Path
 import random
 
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from fastapi.middleware.cors import CORSMiddleware
 
 class State:
     SEED = 0
@@ -28,17 +28,7 @@ app = FastAPI(
     version='0.1',
 )
 
-origins = ["http://0.0.0.0:8001"]
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["image_index"],
-)
-
+app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
 
 def get_image_path_given_index(image_index):
     assert image_index in state.indices
