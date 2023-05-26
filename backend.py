@@ -43,7 +43,6 @@ app.add_middleware(
 def get_image_path_given_index(image_index):
     assert image_index in state.indices
     return str(state.files[image_index])
-    return str(state.files[image_index].absolute())
 
 @app.get("/")
 async def read_root():
