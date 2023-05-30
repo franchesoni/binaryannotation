@@ -45,7 +45,7 @@ async def read_root2():
 @app.get('/get_next_img')
 def get_next_img():
     # randomly sample an index from the to_annotate_indices
-    next_index = random.sample(state.to_annotate_indices, 1)[0]
+    next_index = random.sample(list(state.to_annotate_indices), 1)[0]
     print('='*20)
     print('next_index', next_index)
     print('='*20)
