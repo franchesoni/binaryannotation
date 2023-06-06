@@ -1,3 +1,8 @@
+# using docker
+`docker build -t binaryannotation .`
+`docker run -p 8000:8000 -v PATHTOFOLDERCONTAININGkagglecatsanddogs_3367a:/archive binaryannotation`
+
+# dev (no docker)
 given that everything is correctly installed, we do:
 `python backend.py --reload`
 

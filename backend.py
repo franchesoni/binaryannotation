@@ -10,7 +10,7 @@ from fastapi.responses import FileResponse
 
 class State:
     SEED = 0
-    data_path = Path('archive/kagglecatsanddogs_3367a/PetImages/')
+    data_path = Path('/archive/kagglecatsanddogs_3367a/PetImages/')
 
     def __init__(self):
         self.received_annotation = False
