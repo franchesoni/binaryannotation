@@ -2,28 +2,30 @@
 import os
 import json
 from pathlib import Path
-import random
 
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
-from fastapi.middleware.cors import CORSMiddleware
-
 from fastapi.templating import Jinja2Templates
+
+from dataset import CatsAndDogsDataset 
+from selector import MinProbSelector as Selector
 
 class State:
     SEED = 0
-    data_path = Path('/archive/kagglecatsanddogs_3367a/PetImages/')
+    # data_path = Path('/archive/kagglecatsanddogs_3367a/PetImages/')
+    data_path = Path('../archive/kagglecatsanddogs_3367a/PetImages/')
 
     def __init__(self):
         self.received_annotation = False
-        self.files = [State.data_path / 'Cat' / file for file in os.listdir(State.data_path / 'Cat')]  + [State.data_path / 'Dog' / file for file in os.listdir(State.data_path / 'Dog')]
+        self.dataset = CatsAndDogsDataset(State.data_path)
+        self.files = self.dataset.files
         self.indices = list(range(len(self.files)))
         self.to_annotate_indices = set(self.indices)
         self.annotations = {}
 
 state = State()
-random.seed(State.SEED)
+selector = Selector(state)
 
 app = FastAPI(
     title='Cat or Dog?',
@@ -41,15 +43,14 @@ async def read_root2():
 
 @app.get('/get_next_img')
 def get_next_img():
-    # randomly sample an index from the to_annotate_indices
-    next_index = random.sample(list(state.to_annotate_indices), 1)[0]
+    next_index, prob = selector.get_next_img(state)
     print('='*20)
     print('next_index', next_index)
     print('='*20)
     # get the image path
     image_path = get_image_path_given_index(next_index)
     state.received_annotation = False
-    response = FileResponse(image_path, headers={"image_index": str(next_index)})
+    response = FileResponse(image_path, headers={"image_index": str(next_index), "prob": str(prob)})
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     return response
 
