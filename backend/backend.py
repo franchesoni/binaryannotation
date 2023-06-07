@@ -7,6 +7,9 @@ import random
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+
+from fastapi.templating import Jinja2Templates
 
 class State:
     SEED = 0
@@ -28,19 +31,13 @@ app = FastAPI(
     version='0.1',
 )
 
-app.mount("/frontend", StaticFiles(directory="frontend", html=True), name="frontend")
-
 def get_image_path_given_index(image_index):
     assert image_index in state.indices
     return str(state.files[image_index])
 
-@app.get("/")
-async def read_root():
-    return {"Hello": "World"}
-
 @app.get("/hw")
 async def read_root2():
-    return {"Hello": "World2"}
+    return {"Hello": "World"}
 
 @app.get('/get_next_img')
 def get_next_img():
@@ -75,6 +72,14 @@ async def add_annotation(request: Request):
     print('state.annotations', state.annotations)
     print("="*20)
     return {'success': True}
+
+
+templates = Jinja2Templates(directory="../frontend/")
+
+app.mount("/", StaticFiles(directory="../frontend/", html=True), name="frontend")
+@app.get("/")
+def serve_home(request: Request):
+    return templates.TemplateResponse("index.html", context= {"request": request})
 
 if __name__ == "__main__":
     import uvicorn
