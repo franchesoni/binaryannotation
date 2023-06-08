@@ -1,13 +1,9 @@
-import fcntl
 from pathlib import Path
-import pickle
 
-import tqdm
 import numpy as np
+from IA.iotofiles import safely_read, safely_write
 
-from config import ckptpath, annfilepath, datadir, predspath, rankingpath
-from IA.training import Predictor
-from IA.dataset import FullDataset, UnlabeledDataset
+from config import predspath, rankingpath
 
 def random_selector(predictions):
     predlist = list(predictions.items())
@@ -51,22 +47,9 @@ def continuously_rank(selector, predspath=predspath):
         if Path(predspath).is_file():
             modified_at = Path(predspath).stat().st_mtime
             if last_modified < modified_at:
-                with open(predspath, 'rb') as f:
-                    # Apply a shared lock on the file descriptor
-                    fcntl.flock(f.fileno(), fcntl.LOCK_SH)
-                    # Read the data using pickle
-                    predictions = pickle.load(f)  # {index: probability}
-                    # Release the lock on the file descriptor
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-                predlist = selector(predictions)
-                with open(predspath, 'wb') as f:
-                    # Apply an exclusive lock on the file descriptor
-                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                    # Write the data using pickle
-                    pickle.dump(predlist, f)
-                    # Release the lock on the file descriptor
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
+                predictions = safely_read(predspath)
+                ranking = selector(predictions)
+                safely_write(ranking, rankingpath)
                 last_modified = modified_at
                     
 

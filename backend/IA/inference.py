@@ -1,7 +1,4 @@
-
-import fcntl
 from pathlib import Path
-import pickle
 
 import tqdm
 import torch
@@ -10,6 +7,7 @@ from torch.utils.data import DataLoader
 from config import ckptpath, annfilepath, datadir, predspath
 from IA.training import Predictor
 from IA.dataset import FullDataset, UnlabeledDataset
+from IA.iotofiles import safely_write
 
 def continuously_infer(ckptpath=ckptpath, batch_size=32):
     last_modified = 0
@@ -34,14 +32,7 @@ def continuously_infer(ckptpath=ckptpath, batch_size=32):
                 # save predictions
                 indices = full_ds.to_annotate_indices
                 preds = dict(zip(indices, preds.tolist()))
-                with open(predspath, 'wb') as f:
-                    # Apply an exclusive lock on the file descriptor
-                    fcntl.flock(f.fileno(), fcntl.LOCK_EX)
-                    # Write the data using pickle
-                    pickle.dump(preds, f)
-                    # Release the lock on the file descriptor
-                    fcntl.flock(f.fileno(), fcntl.LOCK_UN)
-
+                safely_write(predspath, preds)
                 last_modified = modified_at
                     
 

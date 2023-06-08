@@ -1,11 +1,10 @@
-import fcntl
 from pathlib import Path
-import pickle
-from abc import ABC, abstractmethod
 
 from PIL import Image
 from torch.nn.utils import Dataset
 from torchvision.transforms.utils import to_tensor
+
+from IA.iotofiles import safely_read
 
 
 
@@ -27,13 +26,7 @@ class FullDataset:
         if not self.annotation_file.exists():
             self.annotations = {}
         else:
-            with open(self.annotation_file, 'rb') as f:
-                # Apply a shared lock on the file descriptor
-                fcntl.flock(f.fileno(), fcntl.LOCK_SH)
-                # Read the data using pickle
-                self.annotations = pickle.load(f)  # {index: probability}
-                # Release the lock on the file descriptor
-                fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+            self.annotations = safely_read(self.annotation_file)
         self.annotated_indices = list(self.annotations.keys())
         self.to_annotate_indices = list(set(self.indices) - set(self.annotated_indices))
 

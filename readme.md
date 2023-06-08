@@ -11,7 +11,7 @@ We have:
 - `backend.py`: It serves the app, continuously reads the ranking and updates the annotations.
 
 We implement file-based communication, in particular we store data in:
-- `annfilepath = 'annotations.pickle'`: the annotations given by the user so far, written by `backend.py` and read by `training.py`
+- `annfilepath = 'annotations.pickle'`: the annotations given by the user so far, written by `backend.py` and read by `training.py` and `inference.py`
 - `ckptpath = 'predictor.ckpt'  # torch save, output of training`: the model as trained so far, written by `IA/training.py` and read by `IA/inference.py`.
 - `predspath = 'predictions.pickle'  # a pickled dict, output of inference`: the predictions of the model over the unlabeled data, written by `IA/inference.py` and read by `IA/selector.py`
 - `rankingpath = 'ranking.pickle'  # a pickled list, output of ranking`: the order in which to present the images, written by `IA/selector.py` and read by `backend.py`
