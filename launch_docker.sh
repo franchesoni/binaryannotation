@@ -1,0 +1,1 @@
+docker run -p 8000:8000 -v C:\Users\basti\Desktop\Stage\kagglecatsanddogs3367a:/images binaryannotation --gpus all --pull always franchesoni/cd

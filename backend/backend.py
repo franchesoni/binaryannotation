@@ -16,12 +16,14 @@ class State:
     #data_path = Path('/images/PetImages/')
     data_path = Path('../../kagglecatsanddogs3367a/PetImages/')
 
+
     def __init__(self):
         self.received_annotation = False
         self.files = [State.data_path / 'Cat' / file for file in os.listdir(State.data_path / 'Cat')]  + [State.data_path / 'Dog' / file for file in os.listdir(State.data_path / 'Dog')]
         self.indices = list(range(len(self.files)))
         self.to_annotate_indices = set(self.indices)
         self.annotations = {}
+        self.annotated = list()
 
 state = State()
 random.seed(State.SEED)
@@ -32,6 +34,14 @@ app = FastAPI(
     version='0.1',
 )
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['http://localhost:3000'],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE"],
+    allow_headers=["*"],
+    expose_headers=['Image_index'],
+)
 def get_image_path_given_index(image_index):
     assert image_index in state.indices
     return str(state.files[image_index])
@@ -61,6 +71,8 @@ async def add_annotation(request: Request):
     body = await request.json()
     image_index = int(body['image_index'])
     is_positive = bool(body['is_positive'])
+    #test
+    state.annotated.append(image_index)
     # add the image_index to the annotated_indices
     state.annotations[image_index] = is_positive
     # remove that index from the to_annotate_indices
@@ -74,6 +86,38 @@ async def add_annotation(request: Request):
     print("="*20)
     return {'success': True}
 
+@app.get('/reset_annotation')
+async def reset_annotation(request: Request):
+    print(state.annotated)
+    #add the tab with the annotated image to the tab with all the index
+    state.to_annotate_indices = state.to_annotate_indices.union(state.annotated)
+    #clear the tab with the annotated image
+    state.annotated.clear()
+    #clear the json
+    state.annotations.clear()
+    with open('annotations.json', 'w') as f:
+        json.dump(state.annotations, f)
+    return
+
+@app.get('/undo_annotation')
+async def undo_annotation():
+    #store the annotated image index in a tab (not in this function)
+    #take the last one
+    image_index = state.annotated[-1]
+    #get_image_path_given_index(last_one)
+    image_path = get_image_path_given_index(image_index)
+    #delete the annotation
+    del state.annotated[-1]
+    keys = list(state.annotations.keys())
+    if keys:
+        last_key = keys[-1]
+        del state.annotations[last_key]
+    with open('annotations.json', 'w') as f:
+        json.dump(state.annotations, f)
+    #send path and index to front
+    response = FileResponse(image_path, headers={"image_index": str(image_index)})
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
 
 templates = Jinja2Templates(directory="../frontend/")
 
@@ -84,4 +128,4 @@ def serve_home(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)
