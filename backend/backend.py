@@ -133,8 +133,7 @@ async def undo_annotation():
     global state_lock
     #store the annotated image index in a tab (not in this function)
     #take the last one
-    previous_index = state.annotated[0][-1]
-    image_path = get_image_path_given_index(previous_index)
+    previous_index = state.annotated[0][-1][0]
     #delete the annotation
     assert previous_index in state.annotations, "previous index should be among the annotations"    
     state_lock.acquire()
@@ -149,7 +148,7 @@ async def undo_annotation():
     ind = int(ind)
     print("prob", prob, "next_index", ind)
     #send path and index to front
-    
+    image_path = get_image_path_given_index(previous_index)
     response = FileResponse(
               image_path, headers={"image_index": str(previous_index), "prob": str(prob)}
 
