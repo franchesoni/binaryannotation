@@ -17,6 +17,7 @@ term_all_processes() {
 trap term_all_processes INT
 
 # reset
+rm -rf runs/
 rm annotations.pickle
 rm predictor.ckpt
 rm predictions.pickle
@@ -24,6 +25,8 @@ rm ranking.pickle
 
 
 #!/bin/bash
+tensorboard --logdir runs/ --port 6066 &
+echo "tensorboard PID: $!"
 python -m IA.training &
 echo "Script training.py PID: $!"
 python -m IA.inference &
