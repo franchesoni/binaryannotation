@@ -8,7 +8,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 
-from config import datadir, rankingpath, annfilepath
+from config import datadir, rankingpath, annfilepath, IPADDRESS, PORT
 from IA.dataset import FullDataset
 from IA.iotofiles import safely_write, safely_read
 from IA.selector import init_ranking
@@ -179,7 +179,7 @@ def serve_home(request: Request):
 if __name__ == "__main__":
     import uvicorn
     #uvicorn.run(app, host="localhost", port=8000)
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=IPADDRESS, port=int(PORT))
 
 if process_thread.is_alive():
     update_ranking = False
