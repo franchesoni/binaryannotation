@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import {IPAddress, port} from './config';
 
 function App() {
   //=================================================================\\
@@ -15,7 +16,7 @@ function App() {
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
-  const [fetchUrl, setFetchUrl] = useState('http://0.0.0.0:8000/');
+  const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
