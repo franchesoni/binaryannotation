@@ -1,3 +1,7 @@
 archive/  
 annotations.json
 __pycache__/
+*.ckpt
+*.pickle
+runs/
+.vscode
