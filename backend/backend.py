@@ -23,7 +23,8 @@ class State:
         self.received_annotation = False
         self.dataset = FullDataset(annotation_file=annfilepath, datadir=State.data_path)
         self.annotations = {}
-        self.annotated = ([], None)
+        self.annotated = []
+        self.next_to_annotate = None
         self.ranking = None
 
 state = State()
@@ -73,18 +74,23 @@ async def helloworld():
 
 @app.get("/get_next_img")
 def get_next_img():
+    print('>get_next_img')
     global state
     global state_lock
-    for (ind, prob) in state.ranking:
+    for (ind, prob) in state.ranking:  # get image from ranking
         if ind not in state.annotations:
             break
     ind = int(ind)
-    print("prob", prob, "next_index", ind)
+    return return_ind_prob(ind, prob)
+
+def return_ind_prob(ind: int, prob:int):
+    global state
+    global state_lock
     # get the image path
     image_path = get_image_path_given_index(ind)
     state_lock.acquire()
     state.received_annotation = False
-    state.annotated = (state.annotated[0], (ind, prob))
+    state.next_to_annotate = (ind, prob)
     state_lock.release()
     response = FileResponse(
         image_path, headers={"image_index": str(ind), "prob": str(prob)}
@@ -101,10 +107,23 @@ async def add_annotation(request: Request):
     body = await request.json()
     image_index = int(body['image_index'])
     is_positive = bool(body['is_positive'])
-    assert state.annotated[1][0] == image_index, "new annotation should be on the last image got"
+    try:
+        assert state.next_to_annotate[0] == image_index, "new annotation should be on the last image got"
+    except AssertionError as e:
+        print('state.next_to_annotate', state.next_to_annotate)
+        print('image_index', image_index)
+        raise e
     # add the image_index to the annotated_indices
     state_lock.acquire()
-    state.annotated = (state.annotated[0] + [state.annotated[1]], None)
+    try:
+        state.annotated = state.annotated + [state.next_to_annotate]
+    except Exception as e:
+        print('='*20)
+        print(state.annotated)
+        print(state.next_to_annotate)
+        raise e
+    state.next_to_annotate = None
+    assert state.annotated[-1] is not None, "you shouldn't overwrite an element referenced elsewhere"
     state.annotations[image_index] = is_positive
     state.received_annotation = True
     state_lock.release()
@@ -115,47 +134,37 @@ async def add_annotation(request: Request):
 
 @app.get('/reset_annotation')
 async def reset_annotation(request: Request):
+    print('>reset_annotation')
     #add the tab with the annotated image to the tab with all the index
     global state
     global state_lock
     state_lock.acquire()
-    state.to_annotate_indices = state.to_annotate_indices.union(state.annotated)
     #clear the tab with the annotated image
-    state.annotated = ([], None)
+    state.annotated = []
     #clear the json
-    state.annotations.clear()
+    state.annotations = {}
+    state_lock.release()
     safely_write(annfilepath, state.annotations)
 
 
 @app.get('/undo_annotation')
 async def undo_annotation():
+    print('>undo_annotation')
     global state
     global state_lock
     #store the annotated image index in a tab (not in this function)
     #take the last one
-    previous_index = state.annotated[0][-1][0]
+    previous_index, previous_prob = state.annotated[-1]
     #delete the annotation
     assert previous_index in state.annotations, "previous index should be among the annotations"    
     state_lock.acquire()
-    state.annotated = (state.annotated[0][:-1], state.annotated[1])
+    state.annotated = state.annotated[:-1]
+    state.next_to_annotate = None
     del state.annotations[previous_index]
     state_lock.release()
     safely_write(annfilepath, state.annotations)
-    # get probabilities and indices from ranking
-    for (ind, prob) in state.ranking:
-        if ind not in state.annotations:
-            break
-    ind = int(ind)
-    print("prob", prob, "next_index", ind)
     #send path and index to front
-    image_path = get_image_path_given_index(previous_index)
-    response = FileResponse(
-              image_path, headers={"image_index": str(previous_index), "prob": str(prob)}
-
-    #  image_path, headers={"image_index": str(previous_index), }
-    )
-    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
-    return response
+    return return_ind_prob(previous_index, previous_prob)
 
 templates = Jinja2Templates(directory="../frontend/")
 
