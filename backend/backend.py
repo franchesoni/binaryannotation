@@ -34,14 +34,7 @@ app = FastAPI(
     version='0.1',
 )
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=['http://localhost:3000'],
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE"],
-    allow_headers=["*"],
-    expose_headers=['Image_index'],
-)
+
 def get_image_path_given_index(image_index):
     assert image_index in state.indices
     return str(state.files[image_index])
@@ -88,7 +81,6 @@ async def add_annotation(request: Request):
 
 @app.get('/reset_annotation')
 async def reset_annotation(request: Request):
-    print(state.annotated)
     #add the tab with the annotated image to the tab with all the index
     state.to_annotate_indices = state.to_annotate_indices.union(state.annotated)
     #clear the tab with the annotated image
@@ -103,9 +95,9 @@ async def reset_annotation(request: Request):
 async def undo_annotation():
     #store the annotated image index in a tab (not in this function)
     #take the last one
-    image_index = state.annotated[-1]
+    previous_index = state.annotated[-1]
     #get_image_path_given_index(last_one)
-    image_path = get_image_path_given_index(image_index)
+    image_path = get_image_path_given_index(previous_index)
     #delete the annotation
     del state.annotated[-1]
     keys = list(state.annotations.keys())
@@ -115,7 +107,7 @@ async def undo_annotation():
     with open('annotations.json', 'w') as f:
         json.dump(state.annotations, f)
     #send path and index to front
-    response = FileResponse(image_path, headers={"image_index": str(image_index)})
+    response = FileResponse(image_path, headers={"image_index": str(previous_index)})
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     return response
 
