@@ -1,4 +1,7 @@
 # writing your custom app
+https://github.com/babouslt/dogsandcats/tree/master
+docker image 
+
 This app involves many modules and intercommunication between them. They're better understood from the file descriptions below. Customize them as needed, although we provide a potentially useful starting point.
 For simplicity, we use pickle-based communication (with the exception of `torch.save`, which is similar).
 
