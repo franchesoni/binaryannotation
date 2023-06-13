@@ -23,7 +23,7 @@ class State:
         self.received_annotation = False
         self.dataset = FullDataset(annotation_file=annfilepath, datadir=State.data_path)
         self.annotations = {}
-        self.annotated = ([], None]
+        self.annotated = ([], None)
         self.ranking = None
 
 state = State()
@@ -121,7 +121,7 @@ async def reset_annotation(request: Request):
     state_lock.acquire()
     state.to_annotate_indices = state.to_annotate_indices.union(state.annotated)
     #clear the tab with the annotated image
-    state.annotated[0].clear()
+    state.annotated = ([], None)
     #clear the json
     state.annotations.clear()
     safely_write(annfilepath, state.annotations)
@@ -138,7 +138,7 @@ async def undo_annotation():
     #delete the annotation
     assert previous_index in state.annotations, "previous index should be among the annotations"    
     state_lock.acquire()
-    del state.annotated[0][-1] 
+    state.annotated = (state.annotated[0][:-1], state.annotated[1])
     del state.annotations[previous_index]
     state_lock.release()
     safely_write(annfilepath, state.annotations)
