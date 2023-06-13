@@ -1,3 +1,37 @@
+# writing your custom app
+https://github.com/babouslt/dogsandcats/tree/master
+docker image 
+
+This app involves many modules and intercommunication between them. They're better understood from the file descriptions below. Customize them as needed, although we provide a potentially useful starting point.
+For simplicity, we use pickle-based communication (with the exception of `torch.save`, which is similar).
+
+We have:
+- `config.py`: Defines useful variables such as `dev, device, datadir`, etc.. 
+- `IA/dataset.py`: Implements `LabeledDataset` and `UnlabeledDataset` classes. Each class subclasses pytorch Dataset. Both list the files for each dataset. The first returns `imgindex, img, label` and the second returns `imgindex, img`. 
+- `IA/training.py`: Has the predictor and the training functions that given a predictor update and save it. Here we can implement pretraining (e.g. self-supervised learning) and (semi-)supervised learning.
+- `IA/inference.py`: Runs inference over the dataset and saves the probabilities to a file.
+- `IA/selector.py`: Loads the probabilities from the file and provides a ranking of files, indices and probabilities. 
+- `backend.py`: It serves the app, continuously reads the ranking and updates the annotations.
+
+We implement file-based communication, in particular we store data in:
+- `annfilepath = 'annotations.pickle'`: the annotations given by the user so far, written by `backend.py` and read by `training.py` and `inference.py`
+- `ckptpath = 'predictor.ckpt'  # torch save, output of training`: the model as trained so far, written by `IA/training.py` and read by `IA/inference.py`.
+- `predspath = 'predictions.pickle'  # a pickled dict, output of inference`: the predictions of the model over the unlabeled data, written by `IA/inference.py` and read by `IA/selector.py`
+- `rankingpath = 'ranking.pickle'  # a pickled list, output of ranking`: the order in which to present the images, written by `IA/selector.py` and read by `backend.py`
+
+This constitutes a sort of loop, but in fact all scripts are constantly running and checking if a new input file is present. In particular `IA/training.py` continuously trains even if the annotations haven't been updated.
+
+
+
+
+
+
+
+# using docker
+`docker build -t binaryannotation .`
+`docker run -p 8000:8000 -v PATHTOFOLDERCONTAININGkagglecatsanddogs_3367a:/archive binaryannotation`
+
+# dev (no docker)
 given that everything is correctly installed, we do:
 `python backend.py --reload`
 
