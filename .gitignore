@@ -5,3 +5,4 @@ __pycache__/
 *.pickle
 runs/
 .vscode
+test.py
