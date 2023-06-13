@@ -18,12 +18,13 @@ class State:
     SEED = 0
     data_path = Path(datadir)
 
+
     def __init__(self):
         self.received_annotation = False
         self.dataset = FullDataset(annotation_file=annfilepath, datadir=State.data_path)
         self.annotations = {}
+        self.annotated = ([], None)
         self.ranking = None
-
 
 state = State()
 state_lock = threading.Lock()
@@ -72,6 +73,8 @@ async def helloworld():
 
 @app.get("/get_next_img")
 def get_next_img():
+    global state
+    global state_lock
     for (ind, prob) in state.ranking:
         if ind not in state.annotations:
             break
@@ -79,7 +82,10 @@ def get_next_img():
     print("prob", prob, "next_index", ind)
     # get the image path
     image_path = get_image_path_given_index(ind)
+    state_lock.acquire()
     state.received_annotation = False
+    state.annotated = (state.annotated[0], (ind, prob))
+    state_lock.release()
     response = FileResponse(
         image_path, headers={"image_index": str(ind), "prob": str(prob)}
     )
@@ -93,10 +99,12 @@ async def add_annotation(request: Request):
     global state_lock
     # get the image_index and is_positive from the request
     body = await request.json()
-    image_index = int(body["image_index"])
-    is_positive = bool(body["is_positive"])
+    image_index = int(body['image_index'])
+    is_positive = bool(body['is_positive'])
+    assert state.annotated[1][0] == image_index, "new annotation should be on the last image got"
     # add the image_index to the annotated_indices
     state_lock.acquire()
+    state.annotated = (state.annotated[0] + [state.annotated[1]], None)
     state.annotations[image_index] = is_positive
     state.received_annotation = True
     state_lock.release()
@@ -105,6 +113,50 @@ async def add_annotation(request: Request):
     # print('state.annotations', state.annotations)
     return {"success": True}
 
+@app.get('/reset_annotation')
+async def reset_annotation(request: Request):
+    #add the tab with the annotated image to the tab with all the index
+    global state
+    global state_lock
+    state_lock.acquire()
+    state.to_annotate_indices = state.to_annotate_indices.union(state.annotated)
+    #clear the tab with the annotated image
+    state.annotated = ([], None)
+    #clear the json
+    state.annotations.clear()
+    safely_write(annfilepath, state.annotations)
+
+
+@app.get('/undo_annotation')
+async def undo_annotation():
+    global state
+    global state_lock
+    #store the annotated image index in a tab (not in this function)
+    #take the last one
+    previous_index = state.annotated[0][-1]
+    image_path = get_image_path_given_index(previous_index)
+    #delete the annotation
+    assert previous_index in state.annotations, "previous index should be among the annotations"    
+    state_lock.acquire()
+    state.annotated = (state.annotated[0][:-1], state.annotated[1])
+    del state.annotations[previous_index]
+    state_lock.release()
+    safely_write(annfilepath, state.annotations)
+    # get probabilities and indices from ranking
+    for (ind, prob) in state.ranking:
+        if ind not in state.annotations:
+            break
+    ind = int(ind)
+    print("prob", prob, "next_index", ind)
+    #send path and index to front
+    
+    response = FileResponse(
+              image_path, headers={"image_index": str(previous_index), "prob": str(prob)}
+
+    #  image_path, headers={"image_index": str(previous_index), }
+    )
+    response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    return response
 
 templates = Jinja2Templates(directory="../frontend/")
 
@@ -118,7 +170,7 @@ def serve_home(request: Request):
 
 if __name__ == "__main__":
     import uvicorn
-
+    #uvicorn.run(app, host="localhost", port=8000)
     uvicorn.run(app, host="0.0.0.0", port=8000)
 
 if process_thread.is_alive():
