@@ -17,23 +17,32 @@ def continuously_infer(ckptpath=ckptpath, batch_size=32):
             modified_at = Path(ckptpath).stat().st_mtime
             if last_modified < modified_at:
                 predictor = Predictor(load_from=ckptpath)
-                # do inference
+                predictor.net.eval()
                 full_ds.refresh()
+                # data
+                n_labeled = len(full_ds.annotated_indices)
                 unlabeled_ds = UnlabeledDataset(full_ds)
                 dataloader = DataLoader(unlabeled_ds, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=False)
-                preds = torch.empty(len(unlabeled_ds))
-                predictor.net.eval()
-                with tqdm.tqdm(total=len(dataloader)) as pbar:
-                    for i, (imgind, img) in enumerate(dataloader):
-                        y_hat = predictor(img)
-                        preds[i*batch_size:(i+1)*batch_size] = y_hat[:, 0]
-                        pbar.update(1)
-                        pbar.set_postfix({"batch": i})
+
+                # inference
+                with torch.no_grad():
+                    preds = - torch.ones(len(unlabeled_ds))  # placeholder
+                    with tqdm.tqdm(total=len(dataloader)) as pbar:
+                        for i, (imgind, imgpath, img) in enumerate(dataloader):
+                            y_hat = torch.sigmoid(predictor(img))
+                            preds[i*batch_size:(i+1)*batch_size] = y_hat[:, 0]
+                            pbar.update(1)
+                            pbar.set_postfix({"batch": i})
+                            if i == n_labeled:
+                                break
+
                 # save predictions
                 indices = full_ds.to_annotate_indices
                 preds = dict(zip(indices, preds.tolist()))
                 safely_write(predspath, preds)
-                last_modified = modified_at
+                print(">>> predictions updated")
+                if i != n_labeled:  # only stop the loop if we have inferred all unlabeled images
+                    last_modified = modified_at
                     
 
 
