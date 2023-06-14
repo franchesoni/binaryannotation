@@ -108,27 +108,17 @@ def return_ind_prob(ind: int, prob:int):
 
 @app.post("/add_annotation")
 async def add_annotation(request: Request):
+    print('>add_annotation')
     global state
     global state_lock
     # get the image_index and is_positive from the request
     body = await request.json()
     image_index = int(body['image_index'])
     is_positive = bool(body['is_positive'])
-    try:
-        assert state.next_to_annotate[0] == image_index, "new annotation should be on the last image got"
-    except AssertionError as e:
-        print('state.next_to_annotate', state.next_to_annotate)
-        print('image_index', image_index)
-        raise e
+    assert state.next_to_annotate[0] == image_index, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
     # add the image_index to the annotated_indices
     state_lock.acquire()
-    try:
-        state.annotated = state.annotated + [state.next_to_annotate]
-    except Exception as e:
-        print('='*20)
-        print(state.annotated)
-        print(state.next_to_annotate)
-        raise e
+    state.annotated = state.annotated + [state.next_to_annotate]
     state.next_to_annotate = None
     assert state.annotated[-1] is not None, "you shouldn't overwrite an element referenced elsewhere"
     state.annotations[image_index] = is_positive
