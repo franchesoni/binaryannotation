@@ -1,4 +1,5 @@
 """Creates the backend using fastapi. The API is comprised by two endpoints: get_next_img and add_annotation."""
+print('importing packages in backend.py')
 from pathlib import Path
 import threading
 import time
@@ -12,6 +13,7 @@ from config import datadir, rankingpath, annfilepath, IPADDRESS, PORT
 from IA.dataset import FullDataset
 from IA.iotofiles import safely_write, safely_read
 from IA.selector import init_ranking
+print('finished importing packages in backend.py')
 
 
 class State:
@@ -77,6 +79,11 @@ def get_next_img():
     print('>get_next_img')
     global state
     global state_lock
+    seconds = 0
+    while state.ranking is None:
+        print(f'been waiting for ranking for {seconds}s...')
+        seconds += 1
+        time.sleep(1)
     for (ind, prob) in state.ranking:  # get image from ranking
         if ind not in state.annotations:
             break

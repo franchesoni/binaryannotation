@@ -1,3 +1,4 @@
+print('importing packages in training.py')
 import time
 from pathlib import Path
 
@@ -10,6 +11,7 @@ from torch.utils.tensorboard import SummaryWriter
 from IA.dataset import FullDataset, LabeledDataset, UnlabeledDataset
 from IA.iotofiles import safely_save_torch, safely_load_torch
 from config import datadir, ckptpath, annfilepath
+print('finished importing packages in training.py')
 
 
 
@@ -17,7 +19,8 @@ class Predictor(torch.nn.Module):
     def __init__(self, load_from=None):
         super().__init__()
         if load_from is None:
-            weights = MobileNet_V3_Small_Weights
+            # weights = MobileNet_V3_Small_Weights
+            weights = None
         elif Path(load_from).is_file():
             weights = None
         else:

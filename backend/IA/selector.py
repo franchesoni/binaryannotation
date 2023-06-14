@@ -1,9 +1,13 @@
+print('importing packages in selector.py')
+import os
+import time
 from pathlib import Path
 
 import numpy as np
 
 from IA.iotofiles import safely_read, safely_write
 from config import predspath, rankingpath
+print('finished importing packages in selector.py')
 
 np.random.seed(0)
 
@@ -57,6 +61,14 @@ def continuously_rank(selector, predspath=predspath):
                 safely_write(rankingpath, ranking)
                 print(">>> ranking updated")
                 last_modified = modified_at
+        else:
+            print('>'*20)
+            print('waiting for predictions...')
+            print('current dir', os.getcwd())
+            print('files in dir:', os.listdir('.'))
+            print('<'*20)
+            time.sleep(1)
+                    
                     
 
 def init_ranking(state, rankingpath=rankingpath):

@@ -1,3 +1,4 @@
+print('importing packages in iotofiles.py')
 import fcntl
 from pathlib import Path
 import pickle
@@ -5,6 +6,7 @@ import time
 from typing import Any
 
 import torch
+print('finished importing packages in iotofiles.py')
 
 def safely_write(file: str | Path, data: Any):
     with open(file, 'wb') as f:

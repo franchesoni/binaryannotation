@@ -1,3 +1,6 @@
+print('importing packages in inference.py')
+import time
+import os
 from pathlib import Path
 
 import tqdm
@@ -8,6 +11,7 @@ from config import ckptpath, annfilepath, datadir, predspath
 from IA.training import Predictor
 from IA.dataset import FullDataset, UnlabeledDataset
 from IA.iotofiles import safely_write
+print('finished importing packages in inference.py')
 
 def continuously_infer(ckptpath=ckptpath, batch_size=32):
     last_modified = 0
@@ -43,6 +47,11 @@ def continuously_infer(ckptpath=ckptpath, batch_size=32):
                 print(">>> predictions updated")
                 if i != n_labeled:  # only stop the loop if we have inferred all unlabeled images
                     last_modified = modified_at
+        else:
+            print('waiting for checkpoint...')
+            print('current dir', os.getcwd())
+            print('files in dir:', os.listdir('.'))
+            time.sleep(1)
                     
 
 
