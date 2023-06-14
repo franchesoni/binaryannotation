@@ -187,7 +187,7 @@ function App() {
         <div className='App-container-button'>
           <button className='App-dogButton' onClick={() => annotateImage(true)}> Dog (positive) <br/> or press F </button>
           <button className='App-catButton' onClick={() => annotateImage(false)}> Cat (negative) <br/> or press J </button>
-          <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press del)</button>
+          <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
         </div>
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
       </header>
