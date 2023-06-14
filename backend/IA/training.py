@@ -19,8 +19,8 @@ class Predictor(torch.nn.Module):
     def __init__(self, load_from=None):
         super().__init__()
         if load_from is None:
-            # weights = MobileNet_V3_Small_Weights
-            weights = None
+            weights = MobileNet_V3_Small_Weights
+            # weights = None
         elif Path(load_from).is_file():
             weights = None
         else:
@@ -51,10 +51,11 @@ class Predictor(torch.nn.Module):
 swstep = 0
 def train_epoch(predictor, optimizer, dataloader, summary_writer:SummaryWriter|None = None, exp_avg=0.1, epoch_n=0):  # simple supervised learning, could be semi-supervised too
     global swstep
+    print('training epoch', end='\r')
     predictor.net.train()
     criterion = torch.nn.BCEWithLogitsLoss()  # modify if needed
     running_loss = 0
-    with tqdm.tqdm(total=len(dataloader)) as pbar:
+    with tqdm.tqdm(total=len(dataloader), disable=True) as pbar:
         # try:
             for i, (imgind, imgpath, img, label) in enumerate(dataloader):
                 optimizer.zero_grad()
