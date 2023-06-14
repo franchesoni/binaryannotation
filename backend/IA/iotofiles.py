@@ -38,11 +38,16 @@ def safely_save_torch(net: torch.nn.Module, path: str | Path):
     torch.save(net.state_dict(), path)
 
 def safely_load_torch(net: torch.nn.Module, path: str | Path) -> torch.nn.Module:
+    tries = 0
     while True:
         try:
             net.load_state_dict(torch.load(path))
             break
-        except (EOFError, RuntimeError):
+        except (EOFError, RuntimeError, OSError) as e:
+            tries += 1
+            if tries > 5:
+                print('error loading model, giving up')
+                raise e
             print('error loading model, trying again...')
             time.sleep(0.1)
     return net
