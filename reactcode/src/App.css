@@ -1,3 +1,10 @@
+:root{
+  --dogButton-color: #e0e0e0;
+  --dogButton-hoverColor: #ccc;
+  --catButton-color: #e0e0e0;
+  --catButton-hoverColor: #ccc;
+}
+
 .App {
   text-align: center;
   font-family: 'Poppins', sans-serif;
@@ -46,7 +53,41 @@
   display: flex;
   margin-top: 10px;
 }
-.App-button {
+.App-dogButton {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 0 10px;
+  background-color: var(--dogButton-color);
+  border: none;
+  border-radius: 15px;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.5s;
+}
+
+.App-dogButton:hover {
+  background-color: var(--dogButton-hoverColor);
+}
+
+.App-catButton {
+  display: inline-block;
+  padding: 10px 20px;
+  margin: 0 10px;
+  background-color: var(--catButton-color);
+  border: none;
+  border-radius: 15px;
+  color: #333;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.5s;
+}
+
+.App-catButton:hover {
+  background-color: var(--catButton-hoverColor);
+}
+
+.App-undoButton {
   display: inline-block;
   padding: 10px 20px;
   margin: 0 10px;
@@ -56,9 +97,9 @@
   color: #333;
   font-size: 16px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.5s;
 }
 
-.App-button:hover {
+.App-undoButton:hover {
   background-color: #ccc;
 }

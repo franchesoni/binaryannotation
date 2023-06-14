@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import { darken } from 'polished';
+let colormap = require('colormap')
 
 function App() {
   //=================================================================\\
@@ -12,10 +14,12 @@ function App() {
   const [annotatedImages, setAnnotatedImages] = useState(0);
   const [previousIndexImg, setPreviousIndexImg] = useState(0);
   const [indexImg, setIndexImg] = useState(0);
+  const [probImg, setProbImg] = useState(0.9);
+  const [colorButton, setColorButton] = useState();
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
-  const [fetchUrl, setFetchUrl] = useState('http://0.0.0.0:8000/');
+  const [fetchUrl, setFetchUrl] = useState('http://localhost:8000/');
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -34,6 +38,20 @@ function App() {
     getImage() 
   },[]);
 
+
+  useEffect(() => {
+    const root = document.documentElement;
+    let colors = colormap({
+      colormap: 'greys',
+      nshades: 100,
+      format: 'hex',
+      alpha: 1
+  })
+    root.style.setProperty('--dogButton-color',colors[Math.round(probImg*100)])
+    root.style.setProperty('--dogButton-hoverColor',darken(0.15,colors[Math.round(probImg*100)]))
+    root.style.setProperty('--catButton-color',colors[Math.round((1-probImg)*100)])
+    root.style.setProperty('--catButton-hoverColor',darken(0.15,colors[Math.round((1-probImg)*100)]))
+  }, [probImg]);
   //=================================================================\\
   //UseEffect to change the image's source when we fetch a new image\\
   useEffect(() => {
@@ -160,15 +178,16 @@ function App() {
         <h3 className='App-annotated-images'> Annotated images: {annotatedImages}</h3>
         <p className='App-cronometer'>{seconds} seconds</p>
         <p className='App-cronometer'>{imgPerSec} img/s</p>
+        <p>Probability: {probImg}</p>
         {imageSrc && (
           <div>
             <img className='App-img' src={imageSrc}/>
           </div>
         )}
         <div className='App-container-button'>
-          <button className='App-button' onClick={() => annotateImage(true)}> Dog (positive) <br/> or press F </button>
-          <button className='App-button' onClick={() => annotateImage(false)}> Cat (negative) <br/> or press J </button>
-          <button className='App-button' onClick={() => undoAnnotation()}>Undo (or press del)</button>
+          <button className='App-dogButton' onClick={() => annotateImage(true)}> Dog (positive) <br/> or press F </button>
+          <button className='App-catButton' onClick={() => annotateImage(false)}> Cat (negative) <br/> or press J </button>
+          <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press del)</button>
         </div>
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
       </header>
