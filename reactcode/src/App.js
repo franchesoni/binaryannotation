@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { darken } from 'polished';
+import ProbabilityMeter from './components/probabilityMeter';
 let colormap = require('colormap')
 
 function App() {
@@ -14,7 +15,7 @@ function App() {
   const [annotatedImages, setAnnotatedImages] = useState(0);
   const [previousIndexImg, setPreviousIndexImg] = useState(0);
   const [indexImg, setIndexImg] = useState(0);
-  const [probImg, setProbImg] = useState(0.9);
+  const [probImg, setProbImg] = useState(0.2);
   const [colorButton, setColorButton] = useState();
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
@@ -26,6 +27,10 @@ function App() {
     await fetch(fetchUrl + 'get_next_img')
       .then(response => {
         setIndexImg(response.headers.get('Image_index'))
+        var prob = response.headers.get('Prob')
+        const roundedProb = Number.parseFloat(prob)
+        console.log(roundedProb)
+        setProbImg(roundedProb.toFixed(3)*100)
         return response.blob().then(blob => ({ blob, indexImg }));
       })
       .then(({blob}) => {
@@ -37,11 +42,16 @@ function App() {
   useEffect(() =>{
     getImage() 
   },[]);
-
+  useEffect(() => {
+    console.log('probImg' + probImg)
+  }, [probImg]);
 
   useEffect(() => {
     const root = document.documentElement;
-    let colors = colormap({
+    root.style.setProperty('--probabilityDog',probImg)
+    root.style.setProperty('--probabilityCat',100 - (probImg))
+    
+    /*let colors = colormap({
       colormap: 'greys',
       nshades: 100,
       format: 'hex',
@@ -50,7 +60,7 @@ function App() {
     root.style.setProperty('--dogButton-color',colors[Math.round(probImg*100)])
     root.style.setProperty('--dogButton-hoverColor',darken(0.15,colors[Math.round(probImg*100)]))
     root.style.setProperty('--catButton-color',colors[Math.round((1-probImg)*100)])
-    root.style.setProperty('--catButton-hoverColor',darken(0.15,colors[Math.round((1-probImg)*100)]))
+    root.style.setProperty('--catButton-hoverColor',darken(0.15,colors[Math.round((1-probImg)*100)]))*/
   }, [probImg]);
   //=================================================================\\
   //UseEffect to change the image's source when we fetch a new image\\
@@ -178,9 +188,11 @@ function App() {
         <h3 className='App-annotated-images'> Annotated images: {annotatedImages}</h3>
         <p className='App-cronometer'>{seconds} seconds</p>
         <p className='App-cronometer'>{imgPerSec} img/s</p>
-        <p>Probability: {probImg}</p>
+        <p>Probability: {probImg}%</p>
+        
+        
         {imageSrc && (
-          <div>
+          <div style={{display:'flex'}}>
             <img className='App-img' src={imageSrc}/>
           </div>
         )}

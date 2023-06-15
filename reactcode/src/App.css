@@ -3,6 +3,8 @@
   --dogButton-hoverColor: #ccc;
   --catButton-color: #e0e0e0;
   --catButton-hoverColor: #ccc;
+  --probabilityDog: 50;
+  --probabilityCat: 50;
 }
 
 .App {
@@ -57,7 +59,7 @@
   display: inline-block;
   padding: 10px 20px;
   margin: 0 10px;
-  background-color: var(--dogButton-color);
+  background-color: hsl(var(--probabilityDog), 70%, 50%);
   border: none;
   border-radius: 15px;
   color: #333;
@@ -74,7 +76,7 @@
   display: inline-block;
   padding: 10px 20px;
   margin: 0 10px;
-  background-color: var(--catButton-color);
+  background-color: hsl(var(--probabilityCat), 70%, 50%);
   border: none;
   border-radius: 15px;
   color: #333;
