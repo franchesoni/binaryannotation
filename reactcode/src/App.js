@@ -62,7 +62,7 @@ function App() {
       })
       //.then(data => console.log('Response body:', data))
       .catch(error => console.error('Error:', error));
-    getImage()
+    await getImage()
     setAnnotatedImages(annotatedImages + 1)
   }
 
@@ -169,7 +169,7 @@ function App() {
         <div className='App-container-button'>
           <button className='App-button' onClick={() => annotateImage(true)}> Dog (positive) <br/> or press F </button>
           <button className='App-button' onClick={() => annotateImage(false)}> Cat (negative) <br/> or press J </button>
-          <button className='App-button' onClick={() => undoAnnotation()}>Undo (or press del)</button>
+          <button className='App-button' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
         </div>
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
       </header>
