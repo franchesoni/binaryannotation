@@ -76,7 +76,6 @@ async def helloworld():
 
 @app.get("/get_next_img")
 def get_next_img():
-    print('>get_next_img')
     global state
     global state_lock
     seconds = 0
@@ -108,7 +107,6 @@ def return_ind_prob(ind: int, prob:int):
 
 @app.post("/add_annotation")
 async def add_annotation(request: Request):
-    print('>add_annotation')
     global state
     global state_lock
     # get the image_index and is_positive from the request
@@ -131,7 +129,6 @@ async def add_annotation(request: Request):
 
 @app.get('/reset_annotation')
 async def reset_annotation(request: Request):
-    print('>reset_annotation')
     #add the tab with the annotated image to the tab with all the index
     global state
     global state_lock
@@ -146,7 +143,6 @@ async def reset_annotation(request: Request):
 
 @app.get('/undo_annotation')
 async def undo_annotation():
-    print('>undo_annotation')
     global state
     global state_lock
     #store the annotated image index in a tab (not in this function)
