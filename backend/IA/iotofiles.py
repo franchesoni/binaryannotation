@@ -45,7 +45,7 @@ def safely_load_torch(net: torch.nn.Module, path: str | Path) -> torch.nn.Module
             break
         except (EOFError, RuntimeError, OSError) as e:
             tries += 1
-            if tries > 5:
+            if tries > 999:
                 print('error loading model, giving up')
                 raise e
             print('error loading model, trying again...')
