@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# # build frontend
-# rm -rf frontend
-# cd reactcode
-# npm install
-# npm run build
-# mv build ../frontend
-# cd ..
+# build frontend
+rm -rf frontend
+cd reactcode
+npm install
+npm run build
+mv build ../frontend
+cd ..
 
 
 # Set variables
