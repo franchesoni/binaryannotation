@@ -1,3 +1,5 @@
+import torch
+
 dev = False
 
 if dev:
@@ -10,5 +12,6 @@ annfilepath = 'annotations.pickle'
 predspath = 'predictions.pickle'  # a pickled dict, output of inference
 rankingpath = 'ranking.pickle'  # a pickled list, output of ranking
 
-IPADDRESS = '0.0.0.0'# if dev else '138.231.63.90'
-PORT = '8000'# if dev else '2332'
+IPADDRESS = '0.0.0.0'
+PORT = '8000'
+DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'

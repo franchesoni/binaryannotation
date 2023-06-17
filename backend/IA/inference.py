@@ -7,7 +7,7 @@ import tqdm
 import torch
 from torch.utils.data import DataLoader
 
-from config import ckptpath, annfilepath, datadir, predspath
+from config import DEVICE, ckptpath, annfilepath, datadir, predspath
 from IA.training import Predictor
 from IA.dataset import FullDataset, UnlabeledDataset
 from IA.iotofiles import safely_write
@@ -22,7 +22,7 @@ def continuously_infer(ckptpath=ckptpath, batch_size=32):
             modified_at = Path(ckptpath).stat().st_mtime
             if last_modified < modified_at:
                 # print('infering 0...')
-                predictor = Predictor(load_from=ckptpath)
+                predictor = Predictor(load_from=ckptpath).to(DEVICE)
                 predictor.net.eval()
                 # print('infering 1...')
                 full_ds.refresh()
@@ -35,10 +35,11 @@ def continuously_infer(ckptpath=ckptpath, batch_size=32):
 
                 # inference
                 with torch.no_grad():
-                    preds = - torch.ones(len(unlabeled_ds))  # placeholder
+                    preds = - torch.ones(len(unlabeled_ds), device=DEVICE)  # placeholder
                     with tqdm.tqdm(total=n_labeled // batch_size, desc='inference'
                     ) as pbar:
                         for i, (imgind, imgpath, img) in enumerate(dataloader):
+                            img = img.to(DEVICE)
                             y_hat = torch.sigmoid(predictor(img))
                             preds[i*batch_size:(i+1)*batch_size] = y_hat[:, 0]
                             pbar.update(1)
