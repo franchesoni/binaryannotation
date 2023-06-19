@@ -61,9 +61,10 @@ function App() {
         return response.json();
       })
       //.then(data => console.log('Response body:', data))
-      .catch(error => console.error('Error:', error));
-    await getImage()
-    setAnnotatedImages(annotatedImages + 1)
+      .catch(error => console.error('Error:', error))
+      .then(() => {getImage()})
+      .then(() => setAnnotatedImages(annotatedImages + 1));
+    // await getImage()
   }
 
   //=================================================================\\
