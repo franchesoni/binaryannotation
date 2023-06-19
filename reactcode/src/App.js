@@ -15,7 +15,7 @@ function App() {
   const [annotatedImages, setAnnotatedImages] = useState(0);
   const [previousIndexImg, setPreviousIndexImg] = useState(0);
   const [indexImg, setIndexImg] = useState(0);
-  const [probImg, setProbImg] = useState(0.2);
+  const [probImg, setProbImg] = useState(0.8);
   const [colorButton, setColorButton] = useState();
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
@@ -27,10 +27,10 @@ function App() {
     await fetch(fetchUrl + 'get_next_img')
       .then(response => {
         setIndexImg(response.headers.get('Image_index'))
-        var prob = response.headers.get('Prob')
+        /*var prob = response.headers.get('Prob')
         const roundedProb = Number.parseFloat(prob)
         console.log(roundedProb)
-        setProbImg(roundedProb.toFixed(3)*100)
+        setProbImg(roundedProb.toFixed(3)*100)*/
         return response.blob().then(blob => ({ blob, indexImg }));
       })
       .then(({blob}) => {
@@ -192,8 +192,10 @@ function App() {
         
         
         {imageSrc && (
-          <div style={{display:'flex'}}>
-            <img className='App-img' src={imageSrc}/>
+          <div style={{display:'flex', alignItems:'center', justifyContent: 'space-between'}}>
+            <img className="image previous" alt="Previous Image" src={imageSrc}/>
+            <img className='image main' src={imageSrc}/>
+            <img className="image next" src={imageSrc} alt="Next Image"/>
           </div>
         )}
         <div className='App-container-button'>

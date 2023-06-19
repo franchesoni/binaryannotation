@@ -105,3 +105,24 @@
 .App-undoButton:hover {
   background-color: #ccc;
 }
+
+.image {
+  opacity: 0.6;
+  transition: opacity 0.3s;
+}
+
+.image.previous,
+.image.next {
+  width: 20%;
+}
+
+.image.main {
+  width: 60%;
+  opacity: 1;
+  width: 400px;
+  height:450px;
+}
+
+.image:hover {
+  opacity: 0.8;
+}
