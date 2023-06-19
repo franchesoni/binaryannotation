@@ -16,6 +16,7 @@ function App() {
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
+  const [fetchInProgress, setFetchInProgress] = useState(false);
   const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
@@ -44,9 +45,13 @@ function App() {
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
   const annotateImage = async (test) => {
+    if (fetchInProgress) {
+      return
+    }
+    setFetchInProgress(true)
     setPreviousIndexImg(indexImg)
     setPreviousUrlImg(urlImg)
-    fetch(fetchUrl + 'add_annotation', {
+    await fetch(fetchUrl + 'add_annotation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -61,9 +66,10 @@ function App() {
         return response.json();
       })
       //.then(data => console.log('Response body:', data))
-      .catch(error => console.error('Error:', error))
       .then(() => {getImage()})
-      .then(() => setAnnotatedImages(annotatedImages + 1));
+      .then(() => setAnnotatedImages(annotatedImages + 1))
+      .catch(error => console.error('Error:', error))
+      .finally(() => setFetchInProgress(false));
     // await getImage()
   }
 
