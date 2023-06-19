@@ -1,9 +1,13 @@
+print('importing packages in selector.py')
+import os
+import time
 from pathlib import Path
 
 import numpy as np
 
 from IA.iotofiles import safely_read, safely_write
 from config import predspath, rankingpath
+print('finished importing packages in selector.py')
 
 np.random.seed(0)
 
@@ -39,6 +43,7 @@ def min_prob_selector(predictions):
     return predlist
 
 def max_prob_selector(predictions: dict):
+    print('selector: max_prob_selector')
     predlist = np.array(list(predictions.items()))
     probs = np.array([p[1] for p in predlist])
     indices = np.argsort(-probs)  # smaller first
@@ -47,16 +52,25 @@ def max_prob_selector(predictions: dict):
 
 
 def continuously_rank(selector, predspath=predspath):
+    print('selector: starting continuously_rank')
     last_modified = 0
     while True:
         if Path(predspath).is_file():
             modified_at = Path(predspath).stat().st_mtime
             if last_modified < modified_at:
+                print('selector: started ranking creation')
                 predictions = safely_read(predspath)
                 ranking = selector(predictions)
                 safely_write(rankingpath, ranking)
                 print(">>> ranking updated")
                 last_modified = modified_at
+            else:
+                print('selector: no new predictions')
+                time.sleep(1)
+        else:
+            print('selector: waiting for predictions...')
+            time.sleep(1)
+                    
                     
 
 def init_ranking(state, rankingpath=rankingpath):
@@ -65,11 +79,10 @@ def init_ranking(state, rankingpath=rankingpath):
     probs = np.ones_like(indices) * 0.5
     ranking = np.concatenate([indices[:, None], probs[:, None]], axis=1)
     safely_write(rankingpath, ranking)
-
-
-
+    print(">>> ranking initialized")
 
 if __name__ == "__main__":
+    print('selector: starting main')
     selector = max_prob_selector
     continuously_rank(selector=selector)
 

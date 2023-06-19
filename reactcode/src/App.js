@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import {IPAddress, port} from './config';
 
 function App() {
   //=================================================================\\
@@ -15,7 +16,7 @@ function App() {
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
-  const [fetchUrl, setFetchUrl] = useState('http://0.0.0.0:8000/');
+  const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -61,7 +62,7 @@ function App() {
       })
       //.then(data => console.log('Response body:', data))
       .catch(error => console.error('Error:', error));
-    getImage()
+    await getImage()
     setAnnotatedImages(annotatedImages + 1)
   }
 
@@ -168,7 +169,7 @@ function App() {
         <div className='App-container-button'>
           <button className='App-button' onClick={() => annotateImage(true)}> Dog (positive) <br/> or press F </button>
           <button className='App-button' onClick={() => annotateImage(false)}> Cat (negative) <br/> or press J </button>
-          <button className='App-button' onClick={() => undoAnnotation()}>Undo (or press del)</button>
+          <button className='App-button' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
         </div>
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
       </header>

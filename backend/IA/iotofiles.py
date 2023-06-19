@@ -1,3 +1,4 @@
+print('importing packages in iotofiles.py')
 import fcntl
 from pathlib import Path
 import pickle
@@ -5,6 +6,7 @@ import time
 from typing import Any
 
 import torch
+print('finished importing packages in iotofiles.py')
 
 def safely_write(file: str | Path, data: Any):
     with open(file, 'wb') as f:
@@ -33,14 +35,7 @@ def safely_read(file: str | Path) -> Any:
     return ret
 
 def safely_save_torch(net: torch.nn.Module, path: str | Path):
-    torch.save(net.state_dict(), path)
+    safely_write(path, net.to('cpu'))
 
 def safely_load_torch(net: torch.nn.Module, path: str | Path) -> torch.nn.Module:
-    while True:
-        try:
-            net.load_state_dict(torch.load(path))
-            break
-        except (EOFError, RuntimeError):
-            print('error loading model, trying again...')
-            time.sleep(0.1)
-    return net
+    return safely_read(path).to(net.device)

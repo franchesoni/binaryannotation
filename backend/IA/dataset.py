@@ -1,3 +1,4 @@
+print('importing packages in dataset.py')
 import random
 from pathlib import Path
 
@@ -7,6 +8,7 @@ from torch.utils.data import Dataset
 from torchvision.transforms.functional import to_tensor
 
 from IA.iotofiles import safely_read
+print('finished importing packages in dataset.py')
 
 
 def process_PIL(pil_img: Image) -> torch.Tensor:

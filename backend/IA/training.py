@@ -1,3 +1,4 @@
+print('importing packages in training.py')
 import time
 from pathlib import Path
 
@@ -5,11 +6,12 @@ import tqdm
 from torchvision.models import mobilenet_v3_small, MobileNet_V3_Small_Weights
 import torch
 from torch.utils.data import DataLoader
-from torch.utils.tensorboard import SummaryWriter
+from torch.utils.tensorboard.writer import SummaryWriter
 
 from IA.dataset import FullDataset, LabeledDataset, UnlabeledDataset
 from IA.iotofiles import safely_save_torch, safely_load_torch
-from config import datadir, ckptpath, annfilepath
+from config import datadir, ckptpath, annfilepath, DEVICE
+print('finished importing packages in training.py')
 
 
 
@@ -18,6 +20,7 @@ class Predictor(torch.nn.Module):
         super().__init__()
         if load_from is None:
             weights = MobileNet_V3_Small_Weights
+            # weights = None
         elif Path(load_from).is_file():
             weights = None
         else:
@@ -25,6 +28,7 @@ class Predictor(torch.nn.Module):
         self.net = self.get_network(weights=weights)
         if (load_from is not None) and (Path(load_from).is_file()):
             self.load(load_from)
+        self.net = self.net.to(DEVICE)
         # self.net = torch.compile(self.net, mode='reduce-overhead')
 
     # we use mobilenetv3 as an example, but you can use any model you want
@@ -48,12 +52,15 @@ class Predictor(torch.nn.Module):
 swstep = 0
 def train_epoch(predictor, optimizer, dataloader, summary_writer:SummaryWriter|None = None, exp_avg=0.1, epoch_n=0):  # simple supervised learning, could be semi-supervised too
     global swstep
+    print('training epoch', end='\r')
     predictor.net.train()
+    predictor.to(DEVICE)
     criterion = torch.nn.BCEWithLogitsLoss()  # modify if needed
     running_loss = 0
-    with tqdm.tqdm(total=len(dataloader)) as pbar:
+    with tqdm.tqdm(total=len(dataloader), disable=True) as pbar:
         # try:
             for i, (imgind, imgpath, img, label) in enumerate(dataloader):
+                img, label = img.to(DEVICE), label.to(DEVICE)
                 optimizer.zero_grad()
                 y_hat = predictor(img).flatten()
                 loss = criterion(y_hat, label*1.)
