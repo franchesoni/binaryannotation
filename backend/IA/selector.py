@@ -11,6 +11,10 @@ print('finished importing packages in selector.py')
 
 np.random.seed(0)
 
+def dummy_selector(predictions: dict):
+    predlist = list(predictions.items())
+    return predlist
+
 def random_selector(predictions: dict):
     predlist = list(predictions.items())  # (index, prob)
     np.random.shuffle(predlist)

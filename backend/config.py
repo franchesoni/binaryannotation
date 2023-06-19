@@ -3,7 +3,7 @@ import torch
 dev = False
 
 if dev:
-    datadir = '../archive/kagglecatsanddogs_3367a/PetImages/'
+    datadir = '/mnt/c/users/basti/desktop/stage/kagglecatsanddogs3367a/PetImages'
 else:
     datadir = '/archive/kagglecatsanddogs_3367a/PetImages/'
 
