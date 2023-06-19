@@ -8,6 +8,8 @@ from typing import Any
 import torch
 print('finished importing packages in iotofiles.py')
 
+from config import DEVICE
+
 def safely_write(file: str | Path, data: Any):
     with open(file, 'wb') as f:
         # Apply an exclusive lock on the file descriptor
@@ -38,4 +40,4 @@ def safely_save_torch(net: torch.nn.Module, path: str | Path):
     safely_write(path, net.to('cpu'))
 
 def safely_load_torch(net: torch.nn.Module, path: str | Path) -> torch.nn.Module:
-    return safely_read(path).to(net.device)
+    return safely_read(path).to(DEVICE)
