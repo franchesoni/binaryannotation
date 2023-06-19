@@ -35,7 +35,7 @@ def safely_read(file: str | Path) -> Any:
     return ret
 
 def safely_save_torch(net: torch.nn.Module, path: str | Path):
-    safely_write(path, net)
+    safely_write(path, net.to('cpu'))
 
 def safely_load_torch(net: torch.nn.Module, path: str | Path) -> torch.nn.Module:
-    return safely_read(path)
+    return safely_read(path).to(net.device)
