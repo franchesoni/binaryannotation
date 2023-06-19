@@ -30,7 +30,7 @@ def safely_read(file: str | Path) -> Any:
                 # Release the lock on the file descriptor
                 fcntl.flock(f.fileno(), fcntl.LOCK_UN)
             break
-        except EOFError:
+        except (EOFError, pickle.UnpicklingError):
             time.sleep(1)
             print('error reading file, trying again...')
 
