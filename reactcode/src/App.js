@@ -99,17 +99,17 @@ function App() {
         setIsActive(true)
         annotateImage(true)
       }
-      if (event.key === 'j') {
+      else if (event.key === 'j') {
         setIsActive(true)
         annotateImage(false)
       }
-      if (event.key === 'r') {
+      else if (event.key === 'r') {
         resetAnnotations()
       }
-      if (event.code === 'Space') {
+      else if (event.code === 'Space') {
         setIsActive(false)
       }
-      if (event.key === 'Backspace') {
+      else if (event.key === 'Backspace') {
         undoAnnotation()
       }
     };
