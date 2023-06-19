@@ -8,6 +8,6 @@ COPY ./frontend /binaryAnnotation/frontend
 COPY ./backend /binaryAnnotation/backend
 
 
-EXPOSE 8000
 WORKDIR /binaryAnnotation/backend
-CMD ["python", "backend.py", "--reload"]
+# CMD ["python", "backend.py", "--reload"]
+CMD ["bash", "launch.sh"]

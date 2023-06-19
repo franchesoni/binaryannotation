@@ -19,7 +19,8 @@
     "start": "react-scripts start",
     "build": "react-scripts build",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build2": "react-scripts build && rm -rf ../frontend/* && mkdir -p ../frontend && cp -R build/* ../frontend"
   },
   "eslintConfig": {
     "extends": [

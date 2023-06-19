@@ -1,4 +1,5 @@
 """Creates the backend using fastapi. The API is comprised by two endpoints: get_next_img and add_annotation."""
+print('importing packages in backend.py')
 from pathlib import Path
 import threading
 import time
@@ -8,10 +9,11 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 
-from config import datadir, rankingpath, annfilepath
+from config import datadir, rankingpath, annfilepath, IPADDRESS, PORT
 from IA.dataset import FullDataset
 from IA.iotofiles import safely_write, safely_read
 from IA.selector import init_ranking
+print('finished importing packages in backend.py')
 
 
 class State:
@@ -21,11 +23,11 @@ class State:
 
     def __init__(self):
         self.received_annotation = False
-        self.dataset = FullDataset(annotation_file=annfilepath, datadir=State.data_path)
+        self.dataset = FullDataset(annotation_file=annfilepath, datadir=str(State.data_path))
         self.annotations = {}
         self.annotated = []
         self.next_to_annotate = None
-        self.ranking = None
+        self.ranking: list | None = None
 
 state = State()
 state_lock = threading.Lock()
@@ -74,9 +76,13 @@ async def helloworld():
 
 @app.get("/get_next_img")
 def get_next_img():
-    print('>get_next_img')
     global state
     global state_lock
+    seconds = 0
+    while state.ranking is None:
+        print(f'been waiting for ranking for {seconds}s...')
+        seconds += 1
+        time.sleep(1)
     for (ind, prob) in state.ranking:  # get image from ranking
         if ind not in state.annotations:
             break
@@ -107,21 +113,11 @@ async def add_annotation(request: Request):
     body = await request.json()
     image_index = int(body['image_index'])
     is_positive = bool(body['is_positive'])
-    try:
-        assert state.next_to_annotate[0] == image_index, "new annotation should be on the last image got"
-    except AssertionError as e:
-        print('state.next_to_annotate', state.next_to_annotate)
-        print('image_index', image_index)
-        raise e
+    assert state.next_to_annotate is not None, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
+    assert state.next_to_annotate[0] == image_index, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
     # add the image_index to the annotated_indices
     state_lock.acquire()
-    try:
-        state.annotated = state.annotated + [state.next_to_annotate]
-    except Exception as e:
-        print('='*20)
-        print(state.annotated)
-        print(state.next_to_annotate)
-        raise e
+    state.annotated = state.annotated + [state.next_to_annotate]
     state.next_to_annotate = None
     assert state.annotated[-1] is not None, "you shouldn't overwrite an element referenced elsewhere"
     state.annotations[image_index] = is_positive
@@ -134,7 +130,6 @@ async def add_annotation(request: Request):
 
 @app.get('/reset_annotation')
 async def reset_annotation(request: Request):
-    print('>reset_annotation')
     #add the tab with the annotated image to the tab with all the index
     global state
     global state_lock
@@ -149,7 +144,6 @@ async def reset_annotation(request: Request):
 
 @app.get('/undo_annotation')
 async def undo_annotation():
-    print('>undo_annotation')
     global state
     global state_lock
     #store the annotated image index in a tab (not in this function)
@@ -179,7 +173,7 @@ def serve_home(request: Request):
 if __name__ == "__main__":
     import uvicorn
     #uvicorn.run(app, host="localhost", port=8000)
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host=IPADDRESS, port=int(PORT))
 
 if process_thread.is_alive():
     update_ranking = False

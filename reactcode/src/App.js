@@ -1,8 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
-import { darken } from 'polished';
-import ProbabilityMeter from './components/probabilityMeter';
-let colormap = require('colormap')
+import {IPAddress, port} from './config';
 
 function App() {
   //=================================================================\\
@@ -20,7 +18,9 @@ function App() {
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
-  const [fetchUrl, setFetchUrl] = useState('http://localhost:8000/');
+  const [fetchInProgress, setFetchInProgress] = useState(false);
+  const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
+  const [isKeyPressed, setIsKeyPressed] = useState();
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -71,9 +71,13 @@ function App() {
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
   const annotateImage = async (test) => {
+    if (fetchInProgress) {
+      return
+    }
+    setFetchInProgress(true)
     setPreviousIndexImg(indexImg)
     setPreviousUrlImg(urlImg)
-    fetch(fetchUrl + 'add_annotation', {
+    await fetch(fetchUrl + 'add_annotation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -88,9 +92,11 @@ function App() {
         return response.json();
       })
       //.then(data => console.log('Response body:', data))
-      .catch(error => console.error('Error:', error));
-    getImage()
-    setAnnotatedImages(annotatedImages + 1)
+      .then(() => {getImage()})
+      .then(() => setAnnotatedImages(annotatedImages + 1))
+      .catch(error => console.error('Error:', error))
+      .finally(() => setFetchInProgress(false));
+    // await getImage()
   }
 
   //=================================================================\\
@@ -121,34 +127,45 @@ function App() {
   //=================================================================\\
   //UseEffect to create an event listener on keypress, refreshed every time we change the image\\
   useEffect(() => {
-    const handleKeyPress = (event) => {
+    const handleKeyDown = (event) => {
+      console.log(event.key)
+      if (isKeyPressed) {
+        return; // Si une touche est déjà enfoncée, ne rien faire
+      }
+  
+      setIsKeyPressed(true); // Marquer qu'une touche est enfoncée
+  
+      // Votre logique existante pour gérer les touches individuelles
       if (event.key === 'f') {
-        setIsActive(true)
-        annotateImage(true)
-      }
-      if (event.key === 'j') {
-        setIsActive(true)
-        annotateImage(false)
-      }
-      if (event.key === 'r') {
-        resetAnnotations()
-      }
-      if (event.code === 'Space') {
-        setIsActive(false)
-      }
-      if (event.key === 'Backspace') {
-        undoAnnotation()
+        setIsActive(true);
+        annotateImage(true);
+      } else if (event.key === 'j') {
+        setIsActive(true);
+        annotateImage(false);
+      } else if (event.key === 'r') {
+        resetAnnotations();
+      } else if (event.code === 'Space') {
+        setIsActive(false);
+      } else if (event.key === 'Backspace') {
+        undoAnnotation();
       }
     };
-
-    // Écouter l'événement keydown sur l'élément document
-    document.addEventListener('keydown', handleKeyPress);
-
-    // Nettoyer l'écouteur d'événement lors du démontage du composant
+  
+    const handleKeyUp = () => {
+      setIsKeyPressed(false); // Marquer qu'aucune touche n'est enfoncée
+    };
+  
+    // Écouter les événements keydown et keyup sur l'élément document
+    document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('keyup', handleKeyUp);
+  
+    // Nettoyer les écouteurs d'événements lors du démontage du composant
     return () => {
-      document.removeEventListener('keydown', handleKeyPress);
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [indexImg,previousIndexImg,urlImg,previousUrlImg, annotatedImages]);
+  }, [isKeyPressed, setIsKeyPressed, setIsActive, annotateImage, resetAnnotations, undoAnnotation]);
+  
 
   //=================================================================\\
   //UseEffect to calculate the number of images per second and display it\\

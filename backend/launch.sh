@@ -1,4 +1,5 @@
 #!/bin/bash
+echo 'started launch!'
 # Define a function to terminate all background processes
 term_all_processes() {
   echo "Sending TERM signal to all background jobs..."
@@ -17,21 +18,22 @@ term_all_processes() {
 trap term_all_processes INT
 
 # reset
+rm -rf runs/
 rm annotations.pickle
 rm predictor.ckpt
 rm predictions.pickle
 rm ranking.pickle
 
 
-#!/bin/bash
-python -m IA.training &
+tensorboard --logdir runs/ --port 6066 --bind_all &
+echo "tensorboard PID: $!"
+python -um IA.training &
 echo "Script training.py PID: $!"
-python -m IA.inference &
+python -um IA.inference &
 echo "Script inference.py PID: $!"
-python -m IA.selector &
+python -um IA.selector &
 echo "Script selector.py PID: $!"
-python -m backend 
-# echo "Script backend.py PID: $!"
+python -um backend 
 
 wait # wait for the background processes to finish
 
