@@ -27,10 +27,9 @@ function App() {
     await fetch(fetchUrl + 'get_next_img')
       .then(response => {
         setIndexImg(response.headers.get('Image_index'))
-        /*var prob = response.headers.get('Prob')
+        var prob = response.headers.get('Prob')
         const roundedProb = Number.parseFloat(prob)
-        console.log(roundedProb)
-        setProbImg(roundedProb.toFixed(3)*100)*/
+        setProbImg(roundedProb.toFixed(3)*100)
         return response.blob().then(blob => ({ blob, indexImg }));
       })
       .then(({blob}) => {
