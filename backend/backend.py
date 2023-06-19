@@ -23,11 +23,11 @@ class State:
 
     def __init__(self):
         self.received_annotation = False
-        self.dataset = FullDataset(annotation_file=annfilepath, datadir=State.data_path)
+        self.dataset = FullDataset(annotation_file=annfilepath, datadir=str(State.data_path))
         self.annotations = {}
         self.annotated = []
         self.next_to_annotate = None
-        self.ranking = None
+        self.ranking: list | None = None
 
 state = State()
 state_lock = threading.Lock()
@@ -113,6 +113,7 @@ async def add_annotation(request: Request):
     body = await request.json()
     image_index = int(body['image_index'])
     is_positive = bool(body['is_positive'])
+    assert state.next_to_annotate is not None, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
     assert state.next_to_annotate[0] == image_index, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
     # add the image_index to the annotated_indices
     state_lock.acquire()
