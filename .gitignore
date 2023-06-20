@@ -7,3 +7,4 @@ runs/
 .vscode
 test.py
 env*
+frontend/
