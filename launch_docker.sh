@@ -6,4 +6,6 @@ then
     exit 1
 fi
 
-docker run -p 8000:8000 -p 6066:6066 -v $DATADIR:/archive --gpus all --pull always franchesoni/binann:0.1 
+rm -rf docker_results
+mkdir docker_results
+docker run -p 8000:8000 -p 6066:6066 -v $DATADIR:/archive -v docker_results:/results --gpus all --pull always franchesoni/binann:0.1 

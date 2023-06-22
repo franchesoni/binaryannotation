@@ -8,8 +8,13 @@ if dev:
 else:
     datadir = '/archive/kagglecatsanddogs_3367a/PetImages/'
 
-ckptpath = 'predictor.ckpt'  # torch save, output of training
-annfilepath = 'annotations.pickle'  
+if dev:
+    ckptpath = 'predictor.ckpt'  # torch save, output of training
+    annfilepath = 'annotations.pickle'  
+else:
+    ckptpath = '/results/predictor.ckpt'  # torch save, output of training
+    annfilepath = '/results/annotations.pickle'  
+
 predspath = 'predictions.pickle'  # a pickled dict, output of inference
 rankingpath = 'ranking.pickle'  # a pickled list, output of ranking
 
