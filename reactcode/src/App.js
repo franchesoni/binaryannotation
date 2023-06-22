@@ -220,6 +220,7 @@ function App() {
           <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
         </div>
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
+        <iframe src={`http://${IPAddress}:6066`} width='1400' height='600'></iframe>
       </header>
     </div>
   );
