@@ -5,6 +5,8 @@ import {IPAddress, port} from './config';
 function App() {
   //=================================================================\\
   //Variable declaration
+  const [selectedFiles, setSelectefFiles] = useState([]);
+  const [image, setImage] = useState();
   const [imgPerSec, setImgPerSec] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
@@ -12,14 +14,13 @@ function App() {
   const [previousIndexImg, setPreviousIndexImg] = useState(0);
   const [indexImg, setIndexImg] = useState(0);
   const [probImg, setProbImg] = useState(0.8);
+  const [colorButton, setColorButton] = useState();
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
   const [fetchInProgress, setFetchInProgress] = useState(false);
   const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
   const [isKeyPressed, setIsKeyPressed] = useState();
-  const [trueAnnotatedImages, setTrueAnnotatedImages] = useState(0);
-  const [falseAnnotatedImages, setFalseAnnotatedImages] = useState(0);
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -69,12 +70,6 @@ function App() {
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
   const annotateImage = async (test) => {
-    if (test==true) {
-      setTrueAnnotatedImages(trueAnnotatedImages + 1)
-    }
-    else {
-      setFalseAnnotatedImages(falseAnnotatedImages + 1)
-    }
     if (fetchInProgress) {
       return
     }
@@ -132,6 +127,7 @@ function App() {
   //UseEffect to create an event listener on keypress, refreshed every time we change the image\\
   useEffect(() => {
     const handleKeyDown = (event) => {
+      console.log(event.key)
       if (isKeyPressed) {
         return; // Si une touche est déjà enfoncée, ne rien faire
       }
@@ -205,16 +201,17 @@ function App() {
       <header className="App-header">
         <img className='App-logo-borelli' src="/images/logoBorelli.png"/>
         <h1 className='App-title'>Binary annotation</h1>
-        <h3 className='App-annotated-images'> Annotated images: {annotatedImages} ({trueAnnotatedImages} true and {falseAnnotatedImages} false)</h3>
+        <h3 className='App-annotated-images'> Annotated images: {annotatedImages}</h3>
         <p className='App-cronometer'>{seconds} seconds</p>
         <p className='App-cronometer'>{imgPerSec} img/s</p>
-        <p style={{marginTop:'5px'}}>Probability: {probImg}%</p>
+        <p>Probability: {probImg}%</p>
         
         
         {imageSrc && (
-          <div className='App-img-container'>
-            <img className="App-previous-img" alt="Previous Image" src={previousUrlImg}/>
-            <img className='App-current-img' src={imageSrc}/>
+          <div style={{display:'flex', alignItems:'center', justifyContent: 'space-between'}}>
+            <img className="image previous" alt="Previous Image" src={imageSrc}/>
+            <img className='image main' src={imageSrc}/>
+            <img className="image next" src={imageSrc} alt="Next Image"/>
           </div>
         )}
         <div className='App-container-button'>
