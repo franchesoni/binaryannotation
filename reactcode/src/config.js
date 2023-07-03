@@ -1,2 +1,2 @@
-export const IPAddress = '0.0.0.0'
-export const port = '8077'
+export const IPAddress = 'IPADDRESSPLACEHOLDER'
+export const port = 'PORTPLACEHOLDER'

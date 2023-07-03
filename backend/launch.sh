@@ -1,4 +1,18 @@
 #!/bin/bash
+NEWIPADDRESS=$1
+NEWPORT=$2
+# raise error if no argument is given
+if [ -z "$NEWIPADDRESS" ]
+then
+    echo "No NEWIPADDRESS supplied! Please add the new IP address so we can configure the frontend."
+    exit 1
+fi
+if [ -z "$NEWPORT" ]
+then
+    echo "No NEWPORT supplied! Please add the new port so we can configure the frontend."
+    exit 1
+fi
+
 echo 'started launch!'
 # Define a function to terminate all background processes
 term_all_processes() {
@@ -24,10 +38,12 @@ rm predictor.ckpt
 rm predictions.pickle
 rm ranking.pickle
 
-sed -i "s/IPADDRESS = '[^']*'/IPADDRESS = '0.0.0.0'/g" config.py
-sed -i "s/PORT = '[^']*'/PORT = '8077'/g" config.py
+# the strange sed
+find ../frontend -type f -exec sed -i "s/IPADDRESSPLACEHOLDER/$(echo ${NEWIPADDRESS} | sed 's/\./\\./g')/g" {} +
+find ../frontend -type f -exec sed -i "s/PORTPLACEHOLDER/${NEWPORT}/g" {} +
 
-tensorboard --logdir runs/ --port 8078 --bind_all --reuse_port=true --path_prefix='/tensorboard' &
+echo "Starting tensorboard, training, inference and selector scripts..."
+tensorboard --logdir /iodir/runs/ --port 8078 --bind_all --reuse_port=true --path_prefix='/tensorboard' &
 echo "tensorboard PID: $!"
 python -um IA.training &
 echo "Script training.py PID: $!"
