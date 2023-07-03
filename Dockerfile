@@ -1,4 +1,4 @@
-FROM python:3.11
+FROM python:3.11-slim
 
 RUN pip install --no-cache-dir --upgrade pip
 COPY ./all_requirements.txt /binaryAnnotation/all_requirements.txt
