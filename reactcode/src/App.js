@@ -5,8 +5,9 @@ import {IPAddress, port} from './config';
 function App() {
   //=================================================================\\
   //Variable declaration
-  const [selectedFiles, setSelectefFiles] = useState([]);
-  const [image, setImage] = useState();
+  const tensorboardPort = (parseInt(port) + 1).toString();
+  // const [selectedFiles, setSelectefFiles] = useState([]);
+  // const [image, setImage] = useState();
   const [imgPerSec, setImgPerSec] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
@@ -14,7 +15,7 @@ function App() {
   const [previousIndexImg, setPreviousIndexImg] = useState(0);
   const [indexImg, setIndexImg] = useState(0);
   const [probImg, setProbImg] = useState(0.8);
-  const [colorButton, setColorButton] = useState();
+  // const [colorButton, setColorButton] = useState();
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
@@ -220,7 +221,7 @@ function App() {
           <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
         </div>
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
-        <iframe src={`http://${IPAddress}:6066`} width='1400' height='600'></iframe>
+        <iframe src={`http://${IPAddress}:${tensorboardPort}/tensorboard`} width='1400' height='600'></iframe>
       </header>
     </div>
   );

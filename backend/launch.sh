@@ -24,8 +24,10 @@ rm predictor.ckpt
 rm predictions.pickle
 rm ranking.pickle
 
+sed -i "s/IPADDRESS = '[^']*'/IPADDRESS = '0.0.0.0'/g" config.py
+sed -i "s/PORT = '[^']*'/PORT = '8077'/g" config.py
 
-tensorboard --logdir runs/ --port 6066 --bind_all &
+tensorboard --logdir runs/ --port 8078 --bind_all --reuse_port=true --path_prefix='/tensorboard' &
 echo "tensorboard PID: $!"
 python -um IA.training &
 echo "Script training.py PID: $!"
