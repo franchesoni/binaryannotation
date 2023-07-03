@@ -10,7 +10,7 @@ from torch.utils.tensorboard.writer import SummaryWriter
 
 from IA.dataset import FullDataset, LabeledDataset
 from IA.iotofiles import safely_save_torch, safely_load_torch
-from config import datadir, ckptpath, annfilepath, DEVICE
+from config import datadir, ckptpath, annfilepath, DEVICE, logdir
 print('finished importing packages in training.py')
 
 
@@ -81,7 +81,7 @@ def train_epoch(predictor, optimizer, dataloader, scheduler=None, summary_writer
 def continuously_train(lr=0.001, batch_size=32, exp_avg=0.1, load_from=None, annfilepath=annfilepath, ckptpath=ckptpath, maxbatches=None):
     """Train continuously. Updates the dataset after each epoch."""
     global swstep
-    summary_writer = SummaryWriter()
+    summary_writer = SummaryWriter(log_dir=logdir)
     predictor = Predictor(load_from=load_from)  # load_from if using self-supervised learning
     full_dataset = FullDataset(annotation_file=annfilepath, datadir=datadir)
     epoch_n = 0
