@@ -15,6 +15,13 @@ from IA.iotofiles import safely_write, safely_read
 from IA.selector import init_ranking
 print('finished importing packages in backend.py')
 
+from dotenv import load_dotenv
+import os
+dotenv_path = '../.env'
+load_dotenv(dotenv_path=dotenv_path)
+ipaddress = os.environ.get('IPADDRESS')
+port = os.environ.get("PORT")
+print("Le port est :", port)
 
 class State:
     SEED = 0
@@ -67,7 +74,6 @@ app = FastAPI(
 def get_image_path_given_index(image_index):
     assert image_index in state.dataset.to_annotate_indices
     return str(state.dataset.files[image_index])
-
 
 @app.get("/hello")
 async def helloworld():
@@ -173,7 +179,7 @@ def serve_home(request: Request):
 if __name__ == "__main__":
     import uvicorn
     #uvicorn.run(app, host="localhost", port=8000)
-    uvicorn.run(app, host=IPADDRESS, port=int(PORT))
+    uvicorn.run(app, host=ipaddress, port=int(port))
 
 if process_thread.is_alive():
     update_ranking = False
