@@ -1,0 +1,129 @@
+:root{
+    --dogButton-color: #e0e0e0;
+    --dogButton-hoverColor: #ccc;
+    --catButton-color: #e0e0e0;
+    --catButton-hoverColor: #ccc;
+    --probabilityDog: 50;
+    --probabilityCat: 50;
+  }
+  
+  .App {
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+  }
+   .h1 {
+    margin-bottom: 10px;
+    margin-top: 10px;
+   }
+  
+  .App-title {
+    margin-bottom: 5px;
+    margin-top: 5px;
+  }
+  
+  .App-annotated-images {
+    margin-bottom: 15px;
+    margin-top: 5px;
+  }
+  
+  .App-cronometer {
+    margin-bottom: 15px;
+    margin-top: 5px;
+  }
+  
+  .App-img {
+    width: 400px;
+    height:450px;
+  }
+  
+  .App-logo-borelli {
+    width: 100px;
+  }
+  
+  
+  .App-header {
+    background-color: #282c34;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: calc(10px + 2vmin);
+    color: white;
+  }
+  
+  .App-container-button {
+    display: flex;
+    margin-top: 10px;
+  }
+  .App-dogButton {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 0 10px;
+    background-color: hsl(var(--probabilityDog), 70%, 50%);
+    border: none;
+    border-radius: 15px;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.5s;
+  }
+  
+  .App-dogButton:hover {
+    background-color: var(--dogButton-hoverColor);
+  }
+  
+  .App-catButton {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 0 10px;
+    background-color: hsl(var(--probabilityCat), 70%, 50%);
+    border: none;
+    border-radius: 15px;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.5s;
+  }
+  
+  .App-catButton:hover {
+    background-color: var(--catButton-hoverColor);
+  }
+  
+  .App-undoButton {
+    display: inline-block;
+    padding: 10px 20px;
+    margin: 0 10px;
+    background-color: #e0e0e0;
+    border: none;
+    border-radius: 15px;
+    color: #333;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.5s;
+  }
+  
+  .App-undoButton:hover {
+    background-color: #ccc;
+  }
+  
+  .image {
+    opacity: 0.6;
+    transition: opacity 0.3s;
+  }
+  
+  .image.previous,
+  .image.next {
+    width: 20%;
+  }
+  
+  .image.main {
+    width: 60%;
+    opacity: 1;
+    width: 400px;
+    height:450px;
+  }
+  
+  .image:hover {
+    opacity: 0.8;
+  }
+  

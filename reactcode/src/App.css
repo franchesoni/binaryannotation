@@ -55,74 +55,20 @@
   display: flex;
   margin-top: 10px;
 }
-.App-dogButton {
+
+.App-button {
   display: inline-block;
   padding: 10px 20px;
   margin: 0 10px;
-  background-color: hsl(var(--probabilityDog), 70%, 50%);
+  background-color: white;
   border: none;
   border-radius: 15px;
   color: #333;
-  font-size: 16px;
+  font-size: 25px;
   cursor: pointer;
   transition: background-color 0.5s;
 }
 
-.App-dogButton:hover {
-  background-color: var(--dogButton-hoverColor);
-}
-
-.App-catButton {
-  display: inline-block;
-  padding: 10px 20px;
-  margin: 0 10px;
-  background-color: hsl(var(--probabilityCat), 70%, 50%);
-  border: none;
-  border-radius: 15px;
-  color: #333;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.5s;
-}
-
-.App-catButton:hover {
+.App-button:hover {
   background-color: var(--catButton-hoverColor);
-}
-
-.App-undoButton {
-  display: inline-block;
-  padding: 10px 20px;
-  margin: 0 10px;
-  background-color: #e0e0e0;
-  border: none;
-  border-radius: 15px;
-  color: #333;
-  font-size: 16px;
-  cursor: pointer;
-  transition: background-color 0.5s;
-}
-
-.App-undoButton:hover {
-  background-color: #ccc;
-}
-
-.image {
-  opacity: 0.6;
-  transition: opacity 0.3s;
-}
-
-.image.previous,
-.image.next {
-  width: 20%;
-}
-
-.image.main {
-  width: 60%;
-  opacity: 1;
-  width: 400px;
-  height:450px;
-}
-
-.image:hover {
-  opacity: 0.8;
 }
