@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import Slider from '../../components/slider/index'
 //import {IPAddress, port} from './config';
 
 
@@ -22,8 +23,10 @@ function App() {
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
   const [fetchInProgress, setFetchInProgress] = useState(false);
-  const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
+  const [fetchUrl, setFetchUrl] = useState(`http://localhost:8000/`);
   const [isKeyPressed, setIsKeyPressed] = useState();
+  const [contrastImg, setContrastImg] = useState(1);
+  const [brightnessImg, setBrightnessImg] = useState(1);
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -203,6 +206,24 @@ function App() {
     return () => clearInterval(interval);
   }, [isActive]);
 
+
+  //=================================================================\\
+  const handleContrastChange = (event) => {
+    const root = document.documentElement;
+    const value = event.target.value;
+    root.style.setProperty('--contrastImg',value)
+    setContrastImg(value)
+    
+  };
+
+  const handleBrightnessChange = (event) => {
+    const root = document.documentElement;
+    const value = event.target.value;
+    root.style.setProperty('--brightnessImg',value)
+    setBrightnessImg(value);
+    
+  };
+
   return (
     <div className="App">
       <header className="App-header">
@@ -222,6 +243,26 @@ function App() {
             <img className="image next" src={imageSrc} alt="Next Image"/>
           </div>
         )}
+        <div className='App-container-sliders'>
+          <Slider
+          label="Contrast"
+          type="range"
+          min="0"
+          max="2"
+          value={contrastImg}
+          step='0.01'
+          onChange={handleContrastChange}
+          ></Slider>
+          <Slider 
+          label="Brightness"
+          type="range"
+          min="0"
+          max="2"
+          value={brightnessImg}
+          step='0.01'
+          onChange={handleBrightnessChange}>
+          </Slider>
+        </div>
         <div className='App-container-button'>
           <button className='App-dogButton' onClick={() => annotateImage(true)}> Dog (positive) <br/> or press F </button>
           <button className='App-catButton' onClick={() => annotateImage(false)}> Cat (negative) <br/> or press J </button>

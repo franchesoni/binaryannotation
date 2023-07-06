@@ -1,55 +1,20 @@
-import React, { useState } from 'react';
+import React from 'react';
+import { useState } from 'react';
+import './App.css'; // Assurez-vous d'importer le fichier CSS approprié
 
-const Index = () => {
-  const [contrastValue, setContrastValue] = useState(100);
-  const [brightnessValue, setBrightnessValue] = useState(100);
+const CustomSlider = () => {
+  const [value, setvalue] = useState(0);
 
-  const handleContrastChange = (event) => {
+  const handleChange = (event) => {
     const value = event.target.value;
-    setContrastValue(value);
-  };
-
-  const handleBrightnessChange = (event) => {
-    const value = event.target.value;
-    setBrightnessValue(value);
-  };
-
+    setvalue(value)
+  }
   return (
-    <div>
-      <div className="slider-container">
-        <label htmlFor="contrast-slider">Contrast:</label>
-        <input
-          type="range"
-          id="contrast-slider"
-          min="0"
-          max="200"
-          value={contrastValue}
-          step="1"
-          onChange={handleContrastChange}
-        />
-      </div>
-      <div className="slider-container">
-        <label htmlFor="brightness-slider">Brightness:</label>
-        <input
-          type="range"
-          id="brightness-slider"
-          min="0"
-          max="200"
-          value={brightnessValue}
-          step="1"
-          onChange={handleBrightnessChange}
-        />
-      </div>
-      <img
-        src="/images/logoBorelli.png"
-        alt="Image"
-        style={{
-          filter: `contrast(${contrastValue}%) brightness(${brightnessValue}%)`,
-        }}
-      />
+    <div className="slider-container">
+      <input type="range" className="custom-slider" id="my-slider" min="0" max="1" value={value} step="0.01" onChange={handleChange} />
+      <p>{value*100}</p>
     </div>
   );
 };
 
-export default Index;
-
+export default CustomSlider;

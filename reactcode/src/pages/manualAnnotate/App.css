@@ -5,6 +5,8 @@
     --catButton-hoverColor: #ccc;
     --probabilityDog: 50;
     --probabilityCat: 50;
+    --contrastImg: 1;
+    --brightnessImg:1;
   }
   
   .App {
@@ -109,6 +111,7 @@
   .image {
     opacity: 0.6;
     transition: opacity 0.3s;
+    filter:contrast(var(--contrastImg)) brightness(var(--brightnessImg))
   }
   
   .image.previous,
@@ -127,3 +130,6 @@
     opacity: 0.8;
   }
   
+  .App-container-sliders {
+    display: flex;
+  }
