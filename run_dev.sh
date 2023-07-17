@@ -31,4 +31,4 @@ fi
 rm -rf docker_results
 mkdir docker_results
 # docker run -p $NEWPORT:8077 -p $NEWPORTplus1:8078 --mount type=bind,source=$DATADIR,target=/readonlydir,readonly --mount source=docker_results,target=/iodir --gpus all --pull always franchesoni/binann:0.1 $NEWIPADDRESS $NEWPORT
-docker run -p $NEWPORT:8077 -p $NEWPORTplus1:8078 --mount type=bind,source=$DATADIR,target=/readonlydir,readonly --mount source=docker_results,target=/iodir -it $IMAGE_NAME:$IMAGE_TAG $NEWIPADDRESS $NEWPORT
+docker run -p $NEWPORT:8077 -p $NEWPORTplus1:8078 --mount type=bind,source=$DATADIR,target=/readonlydir,readonly --mount type=bind,source=${PWD}/docker_results,target=/iodir -it $IMAGE_NAME:$IMAGE_TAG $NEWIPADDRESS $NEWPORT
