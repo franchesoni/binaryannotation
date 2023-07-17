@@ -15,14 +15,6 @@ from IA.iotofiles import safely_write, safely_read
 from IA.selector import init_ranking
 print('finished importing packages in backend.py')
 
-from dotenv import load_dotenv
-import os
-dotenv_path = '../.env'
-load_dotenv(dotenv_path=dotenv_path)
-ipaddress = os.environ.get('IPADDRESS')
-port = os.environ.get("PORT")
-print("Le port est :", port)
-
 class State:
     SEED = 0
     data_path = Path(datadir)

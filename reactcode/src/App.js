@@ -47,12 +47,8 @@ function App() {
   //=================================================================\\
   //UseEffect activated when the user refresh the page to have the first image\\
   useEffect(() =>{
-    setPort(process.env.REACT_APP_PORT)
     getImage() 
   },[]);
-  useEffect(() => {
-    console.log(port)
-  }, [port]);
   useEffect(() => {
     console.log('probImg' + probImg)
   }, [probImg]);
