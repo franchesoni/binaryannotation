@@ -15,7 +15,6 @@ from IA.iotofiles import safely_write, safely_read
 from IA.selector import init_ranking
 print('finished importing packages in backend.py')
 
-
 class State:
     SEED = 0
     data_path = Path(datadir)
@@ -67,7 +66,6 @@ app = FastAPI(
 def get_image_path_given_index(image_index):
     assert image_index in state.dataset.to_annotate_indices
     return str(state.dataset.files[image_index])
-
 
 @app.get("/hello")
 async def helloworld():

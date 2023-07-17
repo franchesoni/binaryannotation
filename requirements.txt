@@ -6,3 +6,4 @@ torchvision
 Pillow
 tqdm
 tensorboard
+python-dotenv
