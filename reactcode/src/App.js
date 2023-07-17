@@ -2,14 +2,15 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import Slider from './components/slider/index'
 import ToggleButton from './components/toggleButton/index'
-//import {IPAddress, port} from './config';
+import {IPAddress, port} from './config';
 
 
 function App() {
   //=================================================================\\
   //Variable declaration
-  const [port, setPort] = useState();
-  const IPAddress = process.env.REACT_APP_IPADDRESS
+  const tensorboardPort = (parseInt(port) + 1).toString();
+  // const [selectedFiles, setSelectefFiles] = useState([]);
+  // const [image, setImage] = useState();
   const [imgPerSec, setImgPerSec] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
@@ -17,11 +18,12 @@ function App() {
   const [previousIndexImg, setPreviousIndexImg] = useState(0);
   const [indexImg, setIndexImg] = useState(0);
   const [probImg, setProbImg] = useState(0.8);
+  // const [colorButton, setColorButton] = useState();
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
   const [fetchInProgress, setFetchInProgress] = useState(false);
-  const [fetchUrl, setFetchUrl] = useState(`http://localhost:8000/`);
+  const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
   const [isKeyPressed, setIsKeyPressed] = useState();
   const [contrastImg, setContrastImg] = useState(1);
   const [brightnessImg, setBrightnessImg] = useState(1);
@@ -287,7 +289,7 @@ function App() {
         )}
         
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
-        <iframe src={`http://${IPAddress}:6066`} width='1400' height='600'></iframe>
+        <iframe src={`http://${IPAddress}:${tensorboardPort}/tensorboard`} width='1400' height='600'></iframe>
       </header>
     </div>
   );

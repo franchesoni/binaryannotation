@@ -1,13 +1,4 @@
 #!/bin/bash
-# build frontend
-rm -rf frontend
-cd reactcode
-npm install
-npm run build
-mv build ../frontend
-cd ..
-
-
 # Build and push docker image script
 
 # Set variables
