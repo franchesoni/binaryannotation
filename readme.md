@@ -1,3 +1,6 @@
+
+- ports 8077 and 8078 will be used for the webapp and tensorboard respectively. These are arbitrary numbers that should be manually modified if desired. 
+
 # writing your custom app
 https://github.com/babouslt/dogsandcats/tree/master
 docker image 

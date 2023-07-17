@@ -21,6 +21,8 @@ class FullDataset:
     def __init__(self, annotation_file: str, datadir: str, extension: str = ".jpg"):
         self.datadir = Path(datadir)
         self.files = sorted(self.datadir.glob(f"**/*{extension}"))
+        print(f"{len(self.files)} files found in {self.datadir}")
+        assert len(self.files) > 0, f"no files found in {self.datadir}"
         random.seed(0)  # make them mixed, the problem has little sense if not
         random.shuffle(self.files)
         self.indices = list(range(len(self.files)))
