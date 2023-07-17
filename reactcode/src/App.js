@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 import './App.css';
+import Slider from './components/slider/index'
+import ToggleButton from './components/toggleButton/index'
 import {IPAddress, port} from './config';
+
 
 function App() {
   //=================================================================\\
@@ -22,6 +25,10 @@ function App() {
   const [fetchInProgress, setFetchInProgress] = useState(false);
   const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
   const [isKeyPressed, setIsKeyPressed] = useState();
+  const [contrastImg, setContrastImg] = useState(1);
+  const [brightnessImg, setBrightnessImg] = useState(1);
+  const [autoMode, setAutoMode] = useState(false);
+  const [annotation, setAnnotation] = useState(true);
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -50,17 +57,6 @@ function App() {
     const root = document.documentElement;
     root.style.setProperty('--probabilityDog',probImg)
     root.style.setProperty('--probabilityCat',100 - (probImg))
-    
-    /*let colors = colormap({
-      colormap: 'greys',
-      nshades: 100,
-      format: 'hex',
-      alpha: 1
-  })
-    root.style.setProperty('--dogButton-color',colors[Math.round(probImg*100)])
-    root.style.setProperty('--dogButton-hoverColor',darken(0.15,colors[Math.round(probImg*100)]))
-    root.style.setProperty('--catButton-color',colors[Math.round((1-probImg)*100)])
-    root.style.setProperty('--catButton-hoverColor',darken(0.15,colors[Math.round((1-probImg)*100)]))*/
   }, [probImg]);
   //=================================================================\\
   //UseEffect to change the image's source when we fetch a new image\\
@@ -136,19 +132,27 @@ function App() {
       setIsKeyPressed(true); // Marquer qu'une touche est enfoncée
   
       // Votre logique existante pour gérer les touches individuelles
-      if (event.key === 'f') {
-        setIsActive(true);
-        annotateImage(true);
-      } else if (event.key === 'j') {
-        setIsActive(true);
-        annotateImage(false);
-      } else if (event.key === 'r') {
-        resetAnnotations();
-      } else if (event.code === 'Space') {
-        setIsActive(false);
-      } else if (event.key === 'Backspace') {
-        undoAnnotation();
+      if (autoMode == false) {
+        if (event.key === 'f') {
+          setIsActive(true);
+          annotateImage(true);
+        } else if (event.key === 'j') {
+          setIsActive(true);
+          annotateImage(false);
+        } else if (event.key === 'r') {
+          resetAnnotations();
+        } else if (event.code === 'Space') {
+          setIsActive(false);
+        } else if (event.key === 'Backspace') {
+          undoAnnotation();
+        }
       }
+      else {
+        if (event.key === 'm') {
+          setAnnotation(!annotation)
+        }
+      }
+      
     };
   
     const handleKeyUp = () => {
@@ -164,7 +168,7 @@ function App() {
       document.removeEventListener('keydown', handleKeyDown);
       document.removeEventListener('keyup', handleKeyUp);
     };
-  }, [isKeyPressed, setIsKeyPressed, setIsActive, annotateImage, resetAnnotations, undoAnnotation]);
+  }, [isKeyPressed, setIsKeyPressed, setIsActive, annotateImage, resetAnnotations, undoAnnotation, autoMode]);
   
 
   //=================================================================\\
@@ -186,7 +190,7 @@ function App() {
   //UseEffect to start a timer\\
   useEffect(() => {
     let interval = null;
-
+    console.log('annotation: ' + annotation)
     if (isActive) {
       interval = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds + 1);
@@ -197,6 +201,38 @@ function App() {
     return () => clearInterval(interval);
   }, [isActive]);
 
+
+  //=================================================================\\
+  const handleContrastChange = (event) => {
+    const root = document.documentElement;
+    const value = event.target.value;
+    root.style.setProperty('--contrastImg',value)
+    setContrastImg(value)
+    };
+
+  const handleBrightnessChange = (event) => {
+    const root = document.documentElement;
+    const value = event.target.value;
+    root.style.setProperty('--brightnessImg',value)
+    setBrightnessImg(value);
+    };
+
+  const handleModeChange = (event) => {
+    setAutoMode(!autoMode)
+  }
+
+  useEffect(() => {
+    if (autoMode == false) {return}
+    const interval = setInterval(() => {
+      console.log('Annotation: ' + String(annotation))
+      annotateImage(annotation)
+    }, 1000); // 1000 millisecondes = 1 seconde
+
+    return () => {
+      clearInterval(interval); // Nettoyage de l'intervalle lors de la suppression du composant
+    };
+  }, [indexImg, autoMode, annotation]);
+
   return (
     <div className="App">
       <header className="App-header">
@@ -206,6 +242,11 @@ function App() {
         <p className='App-cronometer'>{seconds} seconds</p>
         <p className='App-cronometer'>{imgPerSec} img/s</p>
         <p>Probability: {probImg}%</p>
+        <ToggleButton value={autoMode} onClick={handleModeChange}></ToggleButton>
+
+        {autoMode && (
+          <p>Annotation: {String(annotation)}</p>
+        )}
         
         
         {imageSrc && (
@@ -215,11 +256,34 @@ function App() {
             <img className="image next" src={imageSrc} alt="Next Image"/>
           </div>
         )}
-        <div className='App-container-button'>
+        <div className='App-container-sliders'>
+          <Slider
+          label="Contrast"
+          type="range"
+          min="0"
+          max="3"
+          value={contrastImg}
+          step='0.01'
+          onChange={handleContrastChange}
+          ></Slider>
+          <Slider 
+          label="Brightness"
+          type="range"
+          min="0"
+          max="2"
+          value={brightnessImg}
+          step='0.01'
+          onChange={handleBrightnessChange}>
+          </Slider>
+        </div>
+        {!autoMode && (
+          <div className='App-container-button'>
           <button className='App-dogButton' onClick={() => annotateImage(true)}> Dog (positive) <br/> or press F </button>
           <button className='App-catButton' onClick={() => annotateImage(false)}> Cat (negative) <br/> or press J </button>
           <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
         </div>
+        )}
+        
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
         <iframe src={`http://${IPAddress}:${tensorboardPort}/tensorboard`} width='1400' height='600'></iframe>
       </header>
