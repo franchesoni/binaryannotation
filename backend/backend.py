@@ -171,6 +171,8 @@ def serve_home(request: Request):
 
 
 if __name__ == "__main__":
+    print('='*20)
+    print(f'starting backend at http://{IPADDRESS}:{PORT}')
     import uvicorn
     uvicorn.run(app, host=IPADDRESS, port=int(PORT))
 
