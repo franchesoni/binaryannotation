@@ -23,7 +23,7 @@ function App() {
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
   const [fetchInProgress, setFetchInProgress] = useState(false);
-  const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
+  const [fetchUrl, setFetchUrl] = useState(`http://localhost:8000/`);
   const [isKeyPressed, setIsKeyPressed] = useState();
   const [contrastImg, setContrastImg] = useState(1);
   const [brightnessImg, setBrightnessImg] = useState(1);
@@ -142,13 +142,15 @@ function App() {
         } else if (event.key === 'r') {
           resetAnnotations();
         } else if (event.code === 'Space') {
+          event.preventDefault();
           setIsActive(false);
         } else if (event.key === 'Backspace') {
           undoAnnotation();
         }
       }
       else {
-        if (event.key === 'm') {
+        if (event.code === 'Space') {
+          event.preventDefault();
           setAnnotation(!annotation)
         }
       }
@@ -226,6 +228,7 @@ function App() {
     const interval = setInterval(() => {
       console.log('Annotation: ' + String(annotation))
       annotateImage(annotation)
+      setAnnotation(true)
     }, 1000); // 1000 millisecondes = 1 seconde
 
     return () => {
