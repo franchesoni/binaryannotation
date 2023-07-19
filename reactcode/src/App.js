@@ -28,7 +28,8 @@ function App() {
   const [contrastImg, setContrastImg] = useState(1);
   const [brightnessImg, setBrightnessImg] = useState(1);
   const [autoMode, setAutoMode] = useState(false);
-  const [annotation, setAnnotation] = useState(true);
+  const [annotation, setAnnotation] = useState(false);
+  const [autoModeSpeed, setAutoModeSpeed] = useState(1);
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -66,7 +67,8 @@ function App() {
 
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
-  const annotateImage = async (test) => {
+  const annotateImage = async (boolean) => {
+    console.log('Annotating' + boolean)
     if (fetchInProgress) {
       return
     }
@@ -80,7 +82,7 @@ function App() {
       },
       body: JSON.stringify({
         image_index: indexImg,
-        is_positive: test
+        is_positive: boolean
       })
     })
       .then(response => {
@@ -124,7 +126,6 @@ function App() {
   //UseEffect to create an event listener on keypress, refreshed every time we change the image\\
   useEffect(() => {
     const handleKeyDown = (event) => {
-      console.log(event.key)
       if (isKeyPressed) {
         return; // Si une touche est déjà enfoncée, ne rien faire
       }
@@ -151,7 +152,10 @@ function App() {
       else {
         if (event.code === 'Space') {
           event.preventDefault();
-          setAnnotation(!annotation)
+          annotateImage(true)
+        }
+        else if (event.key === 'Backspace') {
+          undoAnnotation();
         }
       }
       
@@ -219,22 +223,26 @@ function App() {
     setBrightnessImg(value);
     };
 
+  const handleAutoModeSpeedChange = (event) => {
+    setAutoModeSpeed(event.target.value)
+    };
+
   const handleModeChange = (event) => {
     setAutoMode(!autoMode)
   }
 
   useEffect(() => {
+    if (autoModeSpeed == 0) {return}
     if (autoMode == false) {return}
     const interval = setInterval(() => {
-      console.log('Annotation: ' + String(annotation))
       annotateImage(annotation)
-      setAnnotation(true)
-    }, 1000); // 1000 millisecondes = 1 seconde
+      setAnnotation(false)
+    }, 1000/autoModeSpeed); // 1000 millisecondes = 1 seconde
 
     return () => {
       clearInterval(interval); // Nettoyage de l'intervalle lors de la suppression du composant
     };
-  }, [indexImg, autoMode, annotation]);
+  }, [indexImg, autoMode, annotation, autoModeSpeed]);
 
   return (
     <div className="App">
@@ -248,7 +256,20 @@ function App() {
         <ToggleButton value={autoMode} onClick={handleModeChange}></ToggleButton>
 
         {autoMode && (
-          <p>Annotation: {String(annotation)}</p>
+          <div>
+            <p>Annotation: {String(annotation)}</p>
+            <Slider
+            label="AutoMode Speed"
+            type="range"
+            min="0"
+            max="5"
+            value={autoModeSpeed}
+            step="0.1"
+            onChange={handleAutoModeSpeedChange}>
+            </Slider>
+            <p>{autoModeSpeed}</p>
+          </div>
+          
         )}
         
         
