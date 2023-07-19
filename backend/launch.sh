@@ -45,6 +45,8 @@ reset_placeholders() {
   sed -i "s/${NEWPORT}/PORTPLACEHOLDER/g" config.py
   # reset dockermode in config.py file
   sed -i "s/${DOCKERMODE^}/DOCKERMODEPLACEHOLDER/g" config.py
+  # reset datadir in config.py file
+  sed -i "s|${DATADIR}|DATADIRPLACEHOLDER|g" config.py
 }
 
 # Define a function to terminate all background processes
@@ -89,6 +91,8 @@ sed -i "s/IPADDRESSPLACEHOLDER/$(echo ${NEWIPADDRESS} | sed 's/\./\\./g')/g" con
 sed -i "s/PORTPLACEHOLDER/${NEWPORT}/g" config.py
 # set dockermode in config.py file considering python true and false start with uppercase
 sed -i "s/DOCKERMODEPLACEHOLDER/${DOCKERMODE^}/g" config.py
+# set datadir in config.py file 
+sed -i "s|DATADIRPLACEHOLDER|${DATADIR}|g" config.py
 
 echo "Starting tensorboard, training, inference and selector scripts..."
 # set logdir depending on docker

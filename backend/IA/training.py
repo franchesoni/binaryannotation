@@ -16,30 +16,32 @@ import IA.semisup as semisup
 from config import datadir, ckptpath, annfilepath, DEVICE, logdir
 print('finished importing packages in training.py')
 
+def get_mobilenet_v3_small(load_from):
+    if load_from is None:
+        weights = MobileNet_V3_Small_Weights.DEFAULT
+    elif Path(load_from).is_file():
+        weights = None
+    else:
+        raise ValueError(f"load_from must be None or a file, not {load_from}")
+    if weights:
+        net = mobilenet_v3_small(weights=weights)
+        net.classifier[3] = torch.nn.Linear(1024, 1)
+        return net
+    return mobilenet_v3_small(num_classes=1)
 
 
 class Predictor(torch.nn.Module):  
     def __init__(self, load_from=None):
         super().__init__()
-        if load_from is None:
-            weights = MobileNet_V3_Small_Weights.DEFAULT
-        elif Path(load_from).is_file():
-            weights = None
-        else:
-            raise ValueError(f"load_from must be None or a file, not {load_from}")
-        self.net = self.get_network(weights=weights)
+        self.net = self.get_network(load_from=load_from)
         if (load_from is not None) and (Path(load_from).is_file()):
             self.load(load_from)
         self.net = self.net.to(DEVICE)
         # self.net = torch.compile(self.net, mode='reduce-overhead')
 
     # we use mobilenetv3 as an example, but you can use any model you want
-    def get_network(self, weights=None):
-        if weights:
-            net = mobilenet_v3_small(weights=weights)
-            net.classifier[3] = torch.nn.Linear(1024, 1)
-            return net
-        return mobilenet_v3_small(num_classes=1)
+    def get_network(self, load_from):
+        return get_mobilenet_v3_small(load_from)
 
     def forward(self, x):
         return self.net(x)
