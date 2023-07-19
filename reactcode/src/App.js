@@ -23,7 +23,7 @@ function App() {
   const [urlImg, setUrlImg] = useState();
   const [previousUrlImg, setPreviousUrlImg] = useState();
   const [fetchInProgress, setFetchInProgress] = useState(false);
-  const [fetchUrl, setFetchUrl] = useState(`http://localhost:8000/`);
+  const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
   const [isKeyPressed, setIsKeyPressed] = useState();
   const [contrastImg, setContrastImg] = useState(1);
   const [brightnessImg, setBrightnessImg] = useState(1);
