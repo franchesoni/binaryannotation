@@ -3,8 +3,7 @@ import torch
 dockermode=DOCKERMODEPLACEHOLDER
 IPADDRESS='IPADDRESSPLACEHOLDER'
 PORT='PORTPLACEHOLDER'
-
-datadir = '/readonlydir/' if dockermode else '/home/franchesoni/bastien/archive'
+datadir = '/readonlydir/' if dockermode else 'DATADIRPLACEHOLDER'
 iodirpath = Path('/iodir/' if dockermode else 'iodir/')
 Path(iodirpath).mkdir(exist_ok=True)
 ckptpath = str(iodirpath / 'predictor.ckpt')  # torch save, output of training
