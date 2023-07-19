@@ -18,7 +18,7 @@ def process_PIL(pil_img: Image) -> torch.Tensor:
 
 
 class FullDataset:
-    def __init__(self, annotation_file: str, datadir: str, extension: str = ".jpg"):
+    def __init__(self, annotation_file: str, datadir: str, extension: str = ".png"):
         self.datadir = Path(datadir)
         self.files = sorted(self.datadir.glob(f"**/*{extension}"))
         print(f"{len(self.files)} files found in {self.datadir}")
