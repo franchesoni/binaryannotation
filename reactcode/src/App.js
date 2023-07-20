@@ -157,6 +157,9 @@ function App() {
         else if (event.key === 'Backspace') {
           undoAnnotation();
         }
+        else if (event.key === 'm') {
+          setAutoModeSpeed(0)
+        }
       }
       
     };
