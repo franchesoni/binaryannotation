@@ -31,12 +31,14 @@ function App() {
   const [annotation, setAnnotation] = useState(false);
   const [autoModeSpeed, setAutoModeSpeed] = useState(1);
   const [numberOfImages, setNumberOfImages] = useState();
+  const [fileName, setFileName] = useState();
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
     await fetch(fetchUrl + 'get_next_img')
       .then(response => {
         setIndexImg(response.headers.get('Image_index'))
+        setFileName(response.headers.get('File_name'))
         var prob = response.headers.get('Prob')
         const roundedProb = Number.parseFloat(prob)
         setProbImg(roundedProb.toFixed(3)*100)
@@ -275,7 +277,7 @@ function App() {
         <p className='App-cronometer'>{imgPerSec} img/s</p>
         <p>Probability: {probImg}%</p>
         <ToggleButton value={autoMode} onClick={handleModeChange}></ToggleButton>
-
+        <p>File name: {fileName}</p>
         {autoMode && (
           <div>
             <p>Annotation: {String(annotation)}</p>

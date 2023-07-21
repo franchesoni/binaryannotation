@@ -65,7 +65,9 @@ app = FastAPI(
 
 def get_image_path_given_index(image_index):
     assert image_index in state.dataset.to_annotate_indices
-    return str(state.dataset.files[image_index])
+    file_path = str(state.dataset.files[image_index])
+    file_name = os.path.basename(file_path)
+    return file_path, file_name
 
 @app.get("/hello")
 async def helloworld():
@@ -91,13 +93,13 @@ def return_ind_prob(ind: int, prob:int):
     global state
     global state_lock
     # get the image path
-    image_path = get_image_path_given_index(ind)
+    image_path, file_name = get_image_path_given_index(ind)
     state_lock.acquire()
     state.received_annotation = False
     state.next_to_annotate = (ind, prob)
     state_lock.release()
     response = FileResponse(
-        image_path, headers={"image_index": str(ind), "prob": str(prob)}
+        image_path, headers={"image_index": str(ind), "prob": str(prob), "file_name": str(file_name)}
     )
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     return response
