@@ -30,6 +30,7 @@ function App() {
   const [autoMode, setAutoMode] = useState(false);
   const [annotation, setAnnotation] = useState(false);
   const [autoModeSpeed, setAutoModeSpeed] = useState(1);
+  const [numberOfImages, setNumberOfImages] = useState();
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -45,26 +46,6 @@ function App() {
         setUrlImg(URL.createObjectURL(blob))
       });
   }
-  //=================================================================\\
-  //UseEffect activated when the user refresh the page to have the first image\\
-  useEffect(() =>{
-    getImage() 
-  },[]);
-  useEffect(() => {
-    console.log('probImg' + probImg)
-  }, [probImg]);
-
-  useEffect(() => {
-    const root = document.documentElement;
-    root.style.setProperty('--probabilityDog',probImg)
-    root.style.setProperty('--probabilityCat',100 - (probImg))
-  }, [probImg]);
-  //=================================================================\\
-  //UseEffect to change the image's source when we fetch a new image\\
-  useEffect(() => {
-    setimageSrc(urlImg)
-  }, [urlImg]);
-
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
   const annotateImage = async (boolean) => {
@@ -86,16 +67,53 @@ function App() {
       })
     })
       .then(response => {
-        //console.log(response);
         return response.json();
       })
-      //.then(data => console.log('Response body:', data))
       .then(() => {getImage()})
       .then(() => setAnnotatedImages(annotatedImages + 1))
       .catch(error => console.error('Error:', error))
       .finally(() => setFetchInProgress(false));
-    // await getImage()
   }
+  //=================================================================\\
+  //Third fetch function to get the number of images to annotate\\
+  const getNumberImages = async () => {
+    await fetch(fetchUrl + 'count_images')
+    .then((response) => {
+      if (!response.ok) {
+        throw new Error('La requête a échoué.');
+      }
+      return response.json();
+    })
+    .then((data) => {
+      console.log(data.num_images)
+      setNumberOfImages(data.num_images);
+    })
+    .catch((error) => {
+      console.log(error.message);
+    });
+  }
+  //=================================================================\\
+  //UseEffect activated when the user refresh the page to have the first image and the number of images to annotate\\
+  useEffect(() =>{
+    getImage() 
+    getNumberImages()
+  },[]);
+  useEffect(() => {
+    console.log('probImg' + probImg)
+  }, [probImg]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    root.style.setProperty('--probabilityDog',probImg)
+    root.style.setProperty('--probabilityCat',100 - (probImg))
+  }, [probImg]);
+  //=================================================================\\
+  //UseEffect to change the image's source when we fetch a new image\\
+  useEffect(() => {
+    setimageSrc(urlImg)
+  }, [urlImg]);
+
+
 
   //=================================================================\\
   //Simple function to get previous image and index\\
@@ -252,7 +270,7 @@ function App() {
       <header className="App-header">
         <img className='App-logo-borelli' src="/images/logoBorelli.png"/>
         <h1 className='App-title'>Binary annotation</h1>
-        <h3 className='App-annotated-images'> Annotated images: {annotatedImages}</h3>
+        <h3 className='App-annotated-images'> Annotated images: {annotatedImages} / {numberOfImages}</h3>
         <p className='App-cronometer'>{seconds} seconds</p>
         <p className='App-cronometer'>{imgPerSec} img/s</p>
         <p>Probability: {probImg}%</p>
