@@ -15,13 +15,15 @@ function App() {
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
   const [annotatedImages, setAnnotatedImages] = useState(0);
-  const [previousIndexImg, setPreviousIndexImg] = useState(0);
-  const [indexImg, setIndexImg] = useState(0);
+  // const [previousIndexImg, setPreviousIndexImg] = useState(0);
+  const [previousImgPath, setPreviousImgPath] = useState(0);
+  const [imgPath, setImgPath] = useState("");
+  const [imgProb, setImgProb] = useState(0);
   const [probImg, setProbImg] = useState(0.8);
   // const [colorButton, setColorButton] = useState();
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
-  const [previousUrlImg, setPreviousUrlImg] = useState();
+  // const [previousUrlImg, setPreviousUrlImg] = useState();
   const [fetchInProgress, setFetchInProgress] = useState(false);
   const [fetchUrl, setFetchUrl] = useState(`http://${IPAddress}:${port}/`);
   const [isKeyPressed, setIsKeyPressed] = useState();
@@ -31,18 +33,16 @@ function App() {
   const [annotation, setAnnotation] = useState(false);
   const [autoModeSpeed, setAutoModeSpeed] = useState(1);
   const [numberOfImages, setNumberOfImages] = useState();
-  const [fileName, setFileName] = useState();
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
     await fetch(fetchUrl + 'get_next_img')
       .then(response => {
-        setIndexImg(response.headers.get('Image_index'))
-        setFileName(response.headers.get('File_name'))
-        var prob = response.headers.get('Prob')
-        const roundedProb = Number.parseFloat(prob)
+        setImgPath(response.headers.get('image_path'))
+        setImgProb(response.headers.get('prob'))
+        const roundedProb = Number.parseFloat(imgProb)
         setProbImg(roundedProb.toFixed(3)*100)
-        return response.blob().then(blob => ({ blob, indexImg }));
+        return response.blob().then(blob => ({ blob, imgPath }));
       })
       .then(({blob}) => {
         setUrlImg(URL.createObjectURL(blob))
@@ -50,22 +50,23 @@ function App() {
   }
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
-  const annotateImage = async (boolean) => {
-    console.log('Annotating' + boolean)
+
+const annotateImage = async (label) => {
+    console.log('Annotating' + label)
     if (fetchInProgress) {
       return
     }
     setFetchInProgress(true)
-    setPreviousIndexImg(indexImg)
-    setPreviousUrlImg(urlImg)
+    setPreviousImgPath(imgPath)
+    // setPreviousUrlImg(urlImg)
     await fetch(fetchUrl + 'add_annotation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        image_index: indexImg,
-        is_positive: boolean
+        is_positive: label,
+        image_path: imgPath 
       })
     })
       .then(response => {
@@ -106,8 +107,8 @@ function App() {
 
   useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty('--probabilityDog',probImg)
-    root.style.setProperty('--probabilityCat',100 - (probImg))
+    root.style.setProperty('--probabilityDog', probImg)
+    root.style.setProperty('--probabilityCat', 100 - (probImg))
   }, [probImg]);
   //=================================================================\\
   //UseEffect to change the image's source when we fetch a new image\\
@@ -126,8 +127,8 @@ function App() {
     setAnnotatedImages(annotatedImages-1)
     fetch(fetchUrl + 'undo_annotation')
       .then(response => {
-        setIndexImg(response.headers.get('Image_index'))
-        return response.blob().then(blob => ({ blob, indexImg }));
+        setImgPath(response.headers.get('image_path'))
+        return response.blob().then(blob => ({ blob, imgPath}));
       })
       .then(({blob}) => {
         setUrlImg(URL.createObjectURL(blob))
@@ -265,7 +266,7 @@ function App() {
     return () => {
       clearInterval(interval); // Nettoyage de l'intervalle lors de la suppression du composant
     };
-  }, [indexImg, autoMode, annotation, autoModeSpeed]);
+  }, [imgPath, autoMode, annotation, autoModeSpeed]);
 
   return (
     <div className="App">
@@ -277,7 +278,7 @@ function App() {
         <p className='App-cronometer'>{imgPerSec} img/s</p>
         <p>Probability: {probImg}%</p>
         <ToggleButton value={autoMode} onClick={handleModeChange}></ToggleButton>
-        <p>File name: {fileName}</p>
+        <p>filepath: {imgPath}</p>
         {autoMode && (
           <div>
             <p>Annotation: {String(annotation)}</p>

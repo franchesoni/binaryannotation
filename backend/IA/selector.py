@@ -48,10 +48,11 @@ def min_prob_selector(predictions):
 
 def max_prob_selector(predictions: dict):
     print('selector: max_prob_selector')
-    predlist = np.array(list(predictions.items()))
+    predlist = list(predictions.items())
     probs = np.array([p[1] for p in predlist])
     indices = np.argsort(-probs)  # smaller first
-    predlist = predlist[indices]
+    print(type(predlist), type(predlist[0]), type(indices))
+    predlist = [predlist[ind] for ind in indices]
     return predlist
 
 
@@ -79,9 +80,9 @@ def continuously_rank(selector, predspath=predspath):
 
 def init_ranking(state, rankingpath=rankingpath):
     # create ranking
-    indices = np.array(state.dataset.to_annotate_indices)
-    probs = np.ones_like(indices) * 0.5
-    ranking = np.concatenate([indices[:, None], probs[:, None]], axis=1)
+    paths = state.dataset.to_annotate_paths
+    probs = np.ones(len(paths)) * 0.5
+    ranking = zip(paths, list(probs))
     safely_write(rankingpath, ranking)
     print(">>> ranking initialized")
 

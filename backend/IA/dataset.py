@@ -24,12 +24,13 @@ class FullDataset:
         self.files = []
         for extension in extensions:
             self.files.extend(list(self.datadir.glob(f"**/*{extension}")))
+        self.files = map(str, self.files)
         self.files = sorted(self.files)
         print(f"{len(self.files)} files found in {self.datadir}")
         assert len(self.files) > 0, f"no files found in {self.datadir}"
         random.seed(0)  # make them mixed, the problem has little sense if not
         random.shuffle(self.files)
-        self.indices = list(range(len(self.files)))
+        # self.indices = list(range(len(self.files)))
         self.annotation_file = Path(annotation_file)
         self.refresh()
 
@@ -38,27 +39,27 @@ class FullDataset:
             self.annotations = {}
         else:
             self.annotations = safely_read(self.annotation_file)
-        self.annotated_indices = list(self.annotations.keys())
-        self.to_annotate_indices = list(set(self.indices) - set(self.annotated_indices))
+        self.annotated_paths = list(self.annotations.keys())
+        self.to_annotate_paths = list(set(self.files) - set(self.annotated_paths))
 
     def unlabeled_getitem(self, index: int) -> (int, str, torch.Tensor):
-        chosen_file = self.files[self.to_annotate_indices[index]]
+        chosen_file = self.to_annotate_paths[index]
         img = Image.open(chosen_file)
         img = process_PIL(img)
         return index, str(chosen_file), img
 
     def labeled_getitem(self, index: int) -> (int, str, torch.Tensor, int):
-        chosen_file = self.files[self.annotated_indices[index]]
+        chosen_file = self.annotated_paths[index]
         img = Image.open(chosen_file)
         img = process_PIL(img)
-        label = self.annotations[self.annotated_indices[index]]
+        label = self.annotations[chosen_file]
         return index, str(chosen_file), img, label
 
     def len_unlabeled(self) -> int:
-        return len(self.to_annotate_indices)
+        return len(self.to_annotate_paths)
 
     def len_labeled(self) -> int:
-        return len(self.annotated_indices)
+        return len(self.annotated_paths)
 
     def __len__(self) -> int:
         return len(self.files)
@@ -76,7 +77,7 @@ class UnlabeledDataset(Dataset):
         super().__init__()
         self.full_dataset = full_dataset
 
-    def __getitem__(self, index: int) -> (int, Path, torch.Tensor):
+    def __getitem__(self, index: int) -> (int, str, torch.Tensor):
         return self.full_dataset.unlabeled_getitem(index)
 
     def __len__(self) -> int:
@@ -88,7 +89,7 @@ class LabeledDataset(Dataset):
         super().__init__()
         self.full_dataset = full_dataset
 
-    def __getitem__(self, index: int) -> (int, Path, torch.Tensor, int):
+    def __getitem__(self, index: int) -> (int, str, torch.Tensor, int):
         return self.full_dataset.labeled_getitem(index)
 
     def __len__(self) -> int:

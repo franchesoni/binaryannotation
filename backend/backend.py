@@ -25,7 +25,7 @@ class State:
         self.dataset = FullDataset(annotation_file=annfilepath, datadir=str(State.data_path))
         self.annotations = {}
         self.annotated = []
-        self.next_to_annotate = None
+        self.next_to_annotate: tuple[str, int] | None = None
         self.ranking: list | None = None
 
 state = State()
@@ -63,12 +63,6 @@ app = FastAPI(
 )
 
 
-def get_image_path_given_index(image_index):
-    assert image_index in state.dataset.to_annotate_indices
-    file_path = str(state.dataset.files[image_index])
-    file_name = os.path.basename(file_path)
-    return file_path, file_name
-
 @app.get("/hello")
 async def helloworld():
     return {"Hello": "World"}
@@ -83,23 +77,21 @@ def get_next_img():
         print(f'been waiting for ranking for {seconds}s...')
         seconds += 1
         time.sleep(1)
-    for (ind, prob) in state.ranking:  # get image from ranking
-        if ind not in state.annotations:
+    for (image_path, prob) in state.ranking:  # get image from ranking
+        if image_path not in state.annotations:
             break
-    ind = int(ind)
-    return return_ind_prob(ind, prob)
+    return return_path_prob(image_path, prob)
 
-def return_ind_prob(ind: int, prob:int):
+def return_path_prob(image_path: str, prob:int):
     global state
     global state_lock
     # get the image path
-    image_path, file_name = get_image_path_given_index(ind)
     state_lock.acquire()
     state.received_annotation = False
-    state.next_to_annotate = (ind, prob)
+    state.next_to_annotate = (image_path, prob)
     state_lock.release()
     response = FileResponse(
-        image_path, headers={"image_index": str(ind), "prob": str(prob), "file_name": str(file_name)}
+        image_path, headers={"image_path": image_path, "prob": str(prob)}
     )
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
     return response
@@ -111,16 +103,16 @@ async def add_annotation(request: Request):
     global state_lock
     # get the image_index and is_positive from the request
     body = await request.json()
-    image_index = int(body['image_index'])
+    image_path = body['image_path']
     is_positive = bool(body['is_positive'])
-    assert state.next_to_annotate is not None, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
-    assert state.next_to_annotate[0] == image_index, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
+    assert state.next_to_annotate is not None, "this variable should have been set in the last get_next_image call"  # make sure we call get_next_img or undo_annotation before
+    assert state.next_to_annotate[0] == image_path, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
     # add the image_index to the annotated_indices
     state_lock.acquire()
     state.annotated = state.annotated + [state.next_to_annotate]
     state.next_to_annotate = None
     assert state.annotated[-1] is not None, "you shouldn't overwrite an element referenced elsewhere"
-    state.annotations[image_index] = is_positive
+    state.annotations[image_path] = is_positive
     state.received_annotation = True
     state_lock.release()
     safely_write(annfilepath, state.annotations)
@@ -148,17 +140,17 @@ async def undo_annotation():
     global state_lock
     #store the annotated image index in a tab (not in this function)
     #take the last one
-    previous_index, previous_prob = state.annotated[-1]
+    previous_image_path, previous_prob = state.annotated[-1]
     #delete the annotation
-    assert previous_index in state.annotations, "previous index should be among the annotations"    
+    assert previous_image_path in state.annotations, "previous index should be among the annotations"    
     state_lock.acquire()
     state.annotated = state.annotated[:-1]
     state.next_to_annotate = None
-    del state.annotations[previous_index]
+    del state.annotations[previous_image_path]
     state_lock.release()
     safely_write(annfilepath, state.annotations)
     #send path and index to front
-    return return_filename_prob(previous_index, previous_prob)
+    return return_path_prob(previous_image_path, previous_prob)
 
 
 

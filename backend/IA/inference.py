@@ -28,14 +28,14 @@ def continuously_infer(ckptpath=ckptpath, batch_size=32):
                 full_ds.refresh()
                 # print('infering 2...')
                 # data
-                n_labeled = len(full_ds.annotated_indices)
+                n_labeled = len(full_ds.annotated_paths)
                 unlabeled_ds = UnlabeledDataset(full_ds)
                 dataloader = DataLoader(unlabeled_ds, batch_size=batch_size, shuffle=False, num_workers=0, drop_last=False)
                 print(f'infering 3... ({n_labeled} images)')
 
                 # inference
                 with torch.no_grad():
-                    preds = - torch.ones(len(unlabeled_ds), device=DEVICE)  # placeholder
+                    preds = - torch.ones(len(unlabeled_ds), device=DEVICE)  # placeholder with -1
                     with tqdm.tqdm(total=n_labeled // batch_size, desc='inference'
                     ) as pbar:
                         for i, (imgind, imgpath, img) in enumerate(dataloader):
@@ -49,8 +49,8 @@ def continuously_infer(ckptpath=ckptpath, batch_size=32):
                 # print('infering 4...')
 
                 # save predictions
-                indices = full_ds.to_annotate_indices
-                preds = dict(zip(indices, preds.tolist()))
+                paths = full_ds.to_annotate_paths
+                preds = dict(zip(paths, preds.tolist()))
                 safely_write(predspath, preds)
                 print(">>> predictions updated")
                 if i != n_labeled:  # only stop the loop if we have inferred all unlabeled images
