@@ -158,23 +158,14 @@ async def undo_annotation():
     state_lock.release()
     safely_write(annfilepath, state.annotations)
     #send path and index to front
-    return return_ind_prob(previous_index, previous_prob)
+    return return_filename_prob(previous_index, previous_prob)
 
-def count_images_in_folder(folder_path):
-    image_extensions = ['.png', '.jpg', '.jpeg', '.gif', '.bmp']  # Ajoutez d'autres extensions d'images si nécessaire
-    image_count = 0
 
-    for root, _, files in os.walk(folder_path):
-        for filename in files:
-            if any(filename.lower().endswith(ext) for ext in image_extensions):
-                image_count += 1
-
-    return image_count
 
 @app.get("/count_images")
 def count_images():
     try:
-        num_images = count_images_in_folder(Path(datadir))
+        num_images = len(state.dataset)  
         return {"folder_path": Path(datadir), "num_images": num_images}
     except FileNotFoundError:
         return {"error": "Le chemin du dossier est introuvable."}

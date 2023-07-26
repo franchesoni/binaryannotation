@@ -56,6 +56,9 @@ class FullDataset:
     def len_labeled(self) -> int:
         return len(self.annotated_indices)
 
+    def __len__(self) -> int:
+        return len(self.files)
+
     def get_unlabeled_ds(self) -> Dataset:
         return UnlabeledDataset(self)
 
