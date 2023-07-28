@@ -32,9 +32,8 @@ def true_mode(iterations):
         data = get_image()
         time.sleep(0.2)
         body = {
-            "image_index": data['image_index'],
             "is_positive": True,
-            "file_name": data['file_name'],
+            "image_path": data['image_path'],
         }
         result = annotate_image(data=body)
         time.sleep(0.3)
@@ -44,9 +43,8 @@ def false_mode(iterations):
         data = get_image()
         time.sleep(0.2)
         body = {
-            "image_index": data['image_index'],
             "is_positive": False,
-            "file_name": data['file_name'],
+            "image_path": data['image_path'],
         }
         result = annotate_image(data=body)
         time.sleep(0.3)
@@ -57,9 +55,8 @@ def random_mode(iterations):
         data = get_image()
         time.sleep(0.2)
         body = {
-            "image_index": data['image_index'],
             "is_positive": is_positive,
-            "file_name": data['file_name'],
+            "image_path": data['image_path'],
         }
         result = annotate_image(data=body)
         time.sleep(0.3)
