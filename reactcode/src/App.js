@@ -51,8 +51,7 @@ function App() {
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
 
-const annotateImage = async (label) => {
-    console.log('Annotating' + label)
+const annotateImage = async (label, skipped) => {
     if (fetchInProgress) {
       return
     }
@@ -66,7 +65,8 @@ const annotateImage = async (label) => {
       },
       body: JSON.stringify({
         is_positive: label,
-        image_path: imgPath 
+        image_path: imgPath,
+        is_skipped: skipped
       })
     })
       .then(response => {
@@ -157,10 +157,10 @@ const annotateImage = async (label) => {
       if (autoMode == false) {
         if (event.key === 'f') {
           setIsActive(true);
-          annotateImage(true);
+          annotateImage(true, false);
         } else if (event.key === 'j') {
           setIsActive(true);
-          annotateImage(false);
+          annotateImage(false, false);
         } else if (event.key === 'r') {
           resetAnnotations();
         } else if (event.code === 'Space') {
@@ -173,7 +173,7 @@ const annotateImage = async (label) => {
       else {
         if (event.code === 'Space') {
           event.preventDefault();
-          annotateImage(true)
+          annotateImage(true, false)
         }
         else if (event.key === 'Backspace') {
           undoAnnotation();
@@ -259,7 +259,7 @@ const annotateImage = async (label) => {
     if (autoModeSpeed == 0) {return}
     if (autoMode == false) {return}
     const interval = setInterval(() => {
-      annotateImage(annotation)
+      annotateImage(annotation, false)
       setAnnotation(false)
     }, 1000/autoModeSpeed); // 1000 millisecondes = 1 seconde
 
@@ -326,9 +326,10 @@ const annotateImage = async (label) => {
         </div>
         {!autoMode && (
           <div className='App-container-button'>
-          <button className='App-dogButton' onClick={() => annotateImage(true)}> Dog (positive) <br/> or press F </button>
-          <button className='App-catButton' onClick={() => annotateImage(false)}> Cat (negative) <br/> or press J </button>
+          <button className='App-dogButton' onClick={() => annotateImage(true, false)}> Dog (positive) <br/> or press F </button>
+          <button className='App-catButton' onClick={() => annotateImage(false, false)}> Cat (negative) <br/> or press J </button>
           <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
+          <button className='App-skipButton'onClick={() => annotateImage(false, true)}>Skip</button>
         </div>
         )}
         

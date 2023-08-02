@@ -18,7 +18,7 @@ def process_PIL(pil_img: Image) -> torch.Tensor:
 
 
 class FullDataset:
-    def __init__(self, annotation_file: str, datadir: str, extensions: list[str] = [".jpg", ".png"]):
+    def __init__(self, skipped_file: str, annotation_file: str, datadir: str, extensions: list[str] = [".jpg", ".png"]):
         self.datadir = Path(datadir)
         # select files that have the right extension
         self.files = []
@@ -32,6 +32,7 @@ class FullDataset:
         random.shuffle(self.files)
         # self.indices = list(range(len(self.files)))
         self.annotation_file = Path(annotation_file)
+        self.skipped_file = Path(skipped_file)
         self.refresh()
 
     def refresh(self):
@@ -39,8 +40,13 @@ class FullDataset:
             self.annotations = {}
         else:
             self.annotations = safely_read(self.annotation_file)
+        if not self.skipped_file.exists():
+            self.skipped_paths = {}
+        else:
+            self.skipped_paths = safely_read(self.skipped_file)
+
         self.annotated_paths = list(self.annotations.keys())
-        self.to_annotate_paths = list(set(self.files) - set(self.annotated_paths))
+        self.to_annotate_paths = list(set(self.files) - set(self.annotated_paths) - set(self.skipped_paths))
 
     def unlabeled_getitem(self, index: int) -> (int, str, torch.Tensor):
         chosen_file = self.to_annotate_paths[index]

@@ -9,7 +9,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from fastapi.templating import Jinja2Templates
 
-from config import datadir, rankingpath, annfilepath, IPADDRESS, PORT
+from config import datadir, rankingpath, annfilepath, skippedfilepath, IPADDRESS, PORT
 from IA.dataset import FullDataset
 from IA.iotofiles import safely_write, safely_read
 from IA.selector import init_ranking
@@ -22,8 +22,9 @@ class State:
 
     def __init__(self):
         self.received_annotation = False
-        self.dataset = FullDataset(annotation_file=annfilepath, datadir=str(State.data_path))
+        self.dataset = FullDataset(annotation_file=annfilepath, skipped_file=skippedfilepath, datadir=str(State.data_path))
         self.annotations = {}
+        self.skipped_annotations = []
         self.annotated = []
         self.next_to_annotate: tuple[str, int] | None = None
         self.ranking: list | None = None
@@ -80,6 +81,8 @@ def get_next_img():
     for (image_path, prob) in state.ranking:  # get image from ranking
         if image_path not in state.annotations:
             break
+    print('======================================')
+    print(image_path)
     return return_path_prob(image_path, prob)
 
 def return_path_prob(image_path: str, prob:int):
@@ -105,17 +108,25 @@ async def add_annotation(request: Request):
     body = await request.json()
     image_path = body['image_path']
     is_positive = bool(body['is_positive'])
+    is_skipped = bool(body['is_skipped'])
+    print('====================================')
+    print(is_skipped)
     assert state.next_to_annotate is not None, "this variable should have been set in the last get_next_image call"  # make sure we call get_next_img or undo_annotation before
     assert state.next_to_annotate[0] == image_path, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
-    # add the image_index to the annotated_indices
     state_lock.acquire()
-    state.annotated = state.annotated + [state.next_to_annotate]
-    state.next_to_annotate = None
-    assert state.annotated[-1] is not None, "you shouldn't overwrite an element referenced elsewhere"
-    state.annotations[image_path] = is_positive
+    if (is_skipped == True):
+        state.skipped_annotations.append(image_path)
+        state.next_to_annotate = None
+    else:
+        # add the image_index to the annotated_indices
+        state.annotated = state.annotated + [state.next_to_annotate]
+        state.next_to_annotate = None
+        assert state.annotated[-1] is not None, "you shouldn't overwrite an element referenced elsewhere"
+        state.annotations[image_path] = is_positive
     state.received_annotation = True
     state_lock.release()
     safely_write(annfilepath, state.annotations)
+    safely_write(skippedfilepath, state.skipped_annotations)
     # print("="*20)
     # print('state.annotations', state.annotations)
     return {"success": True}
