@@ -131,8 +131,8 @@ async def add_annotation(request: Request):
     # print('state.annotations', state.annotations)
     return {"success": True}
 
-@app.get('/reset_annotation')
-async def reset_annotation(request: Request):
+@app.get('/reset_everything')
+async def reset_everything(request: Request):
     #add the tab with the annotated image to the tab with all the index
     global state
     global state_lock

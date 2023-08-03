@@ -32,7 +32,9 @@ function App() {
   const [autoMode, setAutoMode] = useState(false);
   const [annotation, setAnnotation] = useState(false);
   const [autoModeSpeed, setAutoModeSpeed] = useState(1);
-  const [numberOfImages, setNumberOfImages] = useState();
+  const [numberOfImages, setNumberOfImages] = useState(); 
+  const [numberOfTrue, setNumberOfTrue] = useState(0);
+  const [numberOfFalse, setNumberOfFalse] = useState(0);
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -54,6 +56,12 @@ function App() {
 const annotateImage = async (label, skipped) => {
     if (fetchInProgress) {
       return
+    }
+    if (label == true && skipped == false) {
+      setNumberOfTrue(numberOfTrue + 1)
+    }
+    else if (label == false && skipped == false) {
+      setNumberOfFalse(numberOfFalse + 1)
     }
     setFetchInProgress(true)
     setPreviousImgPath(imgPath)
@@ -136,12 +144,12 @@ const annotateImage = async (label, skipped) => {
   }
 
   //=================================================================\\
-  //UseEffect to create an event listener on keypress, refreshed every time we change the image\\
+  //Function to reset the annotations\\
   const resetAnnotations = () => {
     setIsActive(false)
     setSeconds(0)
     setAnnotatedImages(0)
-    fetch(fetchUrl + 'reset_annotation')
+    fetch(fetchUrl + 'reset_everything')
   }
   //=================================================================\\
   //UseEffect to create an event listener on keypress, refreshed every time we change the image\\
@@ -274,6 +282,7 @@ const annotateImage = async (label, skipped) => {
         <img className='App-logo-borelli' src="/images/logoBorelli.png"/>
         <h1 className='App-title'>Binary annotation</h1>
         <h3 className='App-annotated-images'> Annotated images: {annotatedImages} / {numberOfImages}</h3>
+        <h3 className='App-true-false-annotated'> {numberOfTrue} true / {numberOfFalse} false</h3>
         <p className='App-cronometer'>{seconds} seconds</p>
         <p className='App-cronometer'>{imgPerSec} img/s</p>
         <p>Probability: {probImg}%</p>
