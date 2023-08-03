@@ -9,8 +9,6 @@ function App() {
   //=================================================================\\
   //Variable declaration
   const tensorboardPort = (parseInt(port) + 1).toString();
-  // const [selectedFiles, setSelectefFiles] = useState([]);
-  // const [image, setImage] = useState();
   const [imgPerSec, setImgPerSec] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
@@ -20,7 +18,6 @@ function App() {
   const [imgPath, setImgPath] = useState("");
   const [imgProb, setImgProb] = useState(0);
   const [probImg, setProbImg] = useState(0.8);
-  // const [colorButton, setColorButton] = useState();
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   // const [previousUrlImg, setPreviousUrlImg] = useState();
@@ -52,8 +49,7 @@ function App() {
   }
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
-
-const annotateImage = async (label, skipped) => {
+  const annotateImage = async (label, skipped) => {
     if (fetchInProgress) {
       return
     }
@@ -109,10 +105,8 @@ const annotateImage = async (label, skipped) => {
     getImage() 
     getNumberImages()
   },[]);
-  useEffect(() => {
-    console.log('probImg' + probImg)
-  }, [probImg]);
-
+  //=================================================================\\
+  //UseEffect to change the color of the buttons according to the probability\\
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty('--probabilityDog', probImg)
@@ -123,11 +117,8 @@ const annotateImage = async (label, skipped) => {
   useEffect(() => {
     setimageSrc(urlImg)
   }, [urlImg]);
-
-
-
   //=================================================================\\
-  //Simple function to get previous image and index\\
+  //Simple function to get previous image and index to undo the last annotation\\
   const undoAnnotation = () => {
     if (annotatedImages === 0){
       return
@@ -142,7 +133,6 @@ const annotateImage = async (label, skipped) => {
         setUrlImg(URL.createObjectURL(blob))
       })
   }
-
   //=================================================================\\
   //Function to reset the annotations\\
   const resetAnnotations = () => {
@@ -156,12 +146,11 @@ const annotateImage = async (label, skipped) => {
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (isKeyPressed) {
-        return; // Si une touche est déjà enfoncée, ne rien faire
+        return; // If a key is already pressed, do nothing
       }
   
-      setIsKeyPressed(true); // Marquer qu'une touche est enfoncée
-  
-      // Votre logique existante pour gérer les touches individuelles
+      setIsKeyPressed(true);
+
       if (autoMode == false) {
         if (event.key === 'f') {
           setIsActive(true);
@@ -207,8 +196,6 @@ const annotateImage = async (label, skipped) => {
       document.removeEventListener('keyup', handleKeyUp);
     };
   }, [isKeyPressed, setIsKeyPressed, setIsActive, annotateImage, resetAnnotations, undoAnnotation, autoMode]);
-  
-
   //=================================================================\\
   //UseEffect to calculate the number of images per second and display it\\
   useEffect(() => {
@@ -223,9 +210,8 @@ const annotateImage = async (label, skipped) => {
       setImgPerSec(0)
     }
   }, [seconds]);
-
   //=================================================================\\
-  //UseEffect to start a timer\\
+  //UseEffect to start the timer\\
   useEffect(() => {
     let interval = null;
     console.log('annotation: ' + annotation)
@@ -238,9 +224,8 @@ const annotateImage = async (label, skipped) => {
     }
     return () => clearInterval(interval);
   }, [isActive]);
-
-
   //=================================================================\\
+  //Functions to change the contrast and brightness of the image\\
   const handleContrastChange = (event) => {
     const root = document.documentElement;
     const value = event.target.value;
@@ -254,15 +239,18 @@ const annotateImage = async (label, skipped) => {
     root.style.setProperty('--brightnessImg',value)
     setBrightnessImg(value);
     };
-
-  const handleAutoModeSpeedChange = (event) => {
-    setAutoModeSpeed(event.target.value)
-    };
-
+  //=================================================================\\
+  //Function to switch the mode between auto and manual\\
   const handleModeChange = (event) => {
     setAutoMode(!autoMode)
   }
-
+  //=================================================================\\
+  //Function to change the speed of the auto mode\\
+  const handleAutoModeSpeedChange = (event) => {
+    setAutoModeSpeed(event.target.value)
+    };
+  //=================================================================\\
+  //UseEffect to auto annotate automatically the image each second the user choose\\
   useEffect(() => {
     if (autoModeSpeed == 0) {return}
     if (autoMode == false) {return}
@@ -302,10 +290,7 @@ const annotateImage = async (label, skipped) => {
             </Slider>
             <p>{autoModeSpeed}</p>
           </div>
-          
         )}
-        
-        
         {imageSrc && (
           <div style={{display:'flex', alignItems:'center', justifyContent: 'space-between'}}>
             <img className="image previous" alt="Previous Image" src={imageSrc}/>
@@ -321,8 +306,8 @@ const annotateImage = async (label, skipped) => {
           max="3"
           value={contrastImg}
           step='0.01'
-          onChange={handleContrastChange}
-          ></Slider>
+          onChange={handleContrastChange}>
+          </Slider>
           <Slider 
           label="Brightness"
           type="range"
@@ -341,7 +326,6 @@ const annotateImage = async (label, skipped) => {
           <button className='App-skipButton' onClick={() => annotateImage(false, true)}>Skip</button>
         </div>
         )}
-        
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
         <iframe src={`http://${IPAddress}:${tensorboardPort}/tensorboard`} width='1400' height='600'></iframe>
       </header>
