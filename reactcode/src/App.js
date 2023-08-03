@@ -282,7 +282,7 @@ const annotateImage = async (label, skipped) => {
         <img className='App-logo-borelli' src="/images/logoBorelli.png"/>
         <h1 className='App-title'>Binary annotation</h1>
         <h3 className='App-annotated-images'> Annotated images: {annotatedImages} / {numberOfImages}</h3>
-        <h3 className='App-true-false-annotated'> {numberOfTrue} true / {numberOfFalse} false</h3>
+        <p className='App-true-false-annotated'> {numberOfTrue} true / {numberOfFalse} false</p>
         <p className='App-cronometer'>{seconds} seconds</p>
         <p className='App-cronometer'>{imgPerSec} img/s</p>
         <p>Probability: {probImg}%</p>
@@ -338,7 +338,7 @@ const annotateImage = async (label, skipped) => {
           <button className='App-dogButton' onClick={() => annotateImage(true, false)}> Dog (positive) <br/> or press F </button>
           <button className='App-catButton' onClick={() => annotateImage(false, false)}> Cat (negative) <br/> or press J </button>
           <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
-          <button className='App-skipButton'onClick={() => annotateImage(false, true)}>Skip</button>
+          <button className='App-skipButton' onClick={() => annotateImage(false, true)}>Skip</button>
         </div>
         )}
         
