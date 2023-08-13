@@ -6,6 +6,7 @@ NEWPORTplus1=$((NEWPORT+1))
 DOCKERMODE=${3:-true}
 # add datadir as fourth optional argument that defaults to /readonlydir
 DATADIR=${4:-/readonlydir}
+RESET=${5:-false}
 
 print_help() {
   echo "Usage: launch.sh NEWIPADDRESS NEWPORT [DOCKERMODE] [DATADIR]"
@@ -13,6 +14,7 @@ print_help() {
   echo "  NEWPORT: the port of the machine where the frontend is running"
   echo "  DOCKERMODE: whether to run in dockermode or not (defaults to true)"
   echo "  DATADIR: the path to the folder with images (defaults to /readonlydir)"
+  echo "  RESET: should we start over or use the existing models and ananotations? (defaults to false)"
   echo -e "Example: launch.sh 127.0.0.1 8077 false /home/user/images\n\n"
   echo "Note that DATADIR is only used in localmode. In dockermode, the images are mounted as a volume."
 }
@@ -68,20 +70,24 @@ term_all_processes() {
 trap term_all_processes INT
 
 # reset
-if [ "$DOCKERMODE" = true ]
+if [ "$RESET" = true ]
 then
-    echo "Running in dockermode"
-    rm -rf /iodir/runs/
-    rm /iodir/annotations.pickle
-    rm /iodir/predictor.ckpt
-else
-    echo "Running in localmode"
-    rm -rf iodir/runs/
-    rm iodir/annotations.pickle
-    rm iodir/predictor.ckpt
+    echo "Resetting..."
+    if [ "$DOCKERMODE" = true ]
+    then
+        echo "Running in dockermode"
+        rm -rf /iodir/runs/
+        rm /iodir/annotations.pickle
+        rm /iodir/predictor.ckpt
+    else
+        echo "Running in localmode"
+        rm -rf iodir/runs/
+        rm iodir/annotations.pickle
+        rm iodir/predictor.ckpt
+    fi
+    rm predictions.pickle
+    rm ranking.pickle
 fi
-rm predictions.pickle
-rm ranking.pickle
 
 # set IP address and port in frontend
 find ../frontend -type f -exec sed -i "s/IPADDRESSPLACEHOLDER/$(echo ${NEWIPADDRESS} | sed 's/\./\\./g')/g" {} +
