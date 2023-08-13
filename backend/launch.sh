@@ -8,15 +8,17 @@ DOCKERMODE=${3:-true}
 DATADIR=${4:-/readonlydir}
 RESET=${5:-false}
 DSTDIR=${6:-/dstdir}
+DUMB=${7:-false}
 
 print_help() {
-  echo "Usage: launch.sh NEWIPADDRESS NEWPORT [DOCKERMODE] [DATADIR]"
+  echo "Usage: launch.sh NEWIPADDRESS NEWPORT [DOCKERMODE] [DATADIR] [RESET] [DSTDIR] [DUMB]"
   echo "  NEWIPADDRESS: the IP address of the machine where the frontend is running"
   echo "  NEWPORT: the port of the machine where the frontend is running"
   echo "  DOCKERMODE: whether to run in dockermode or not (defaults to true)"
   echo "  DATADIR: the path to the folder with images (defaults to /readonlydir)"
   echo "  RESET: should we start over or use the existing models and ananotations? (defaults to false)"
   echo "  DSTDIR: the path to the folder where the models and annotations should be stored (defaults to $PWD/iodir)"
+  echo "  DUMB: whether to run in dumb mode (not use intelligent annotation) or not (defaults to false)"
   echo -e "Example: launch.sh 127.0.0.1 8077 false /home/user/images\n\n"
   echo "Note that DATADIR is only used in localmode. In dockermode, the images are mounted as a volume."
 }
@@ -42,7 +44,7 @@ fi
 
 
 # print arguments
-echo -e "NEWIPADDRESS: $NEWIPADDRESS\nNEWPORT: $NEWPORT\nDOCKERMODE: $DOCKERMODE\nDATADIR: $DATADIR\nRESET: $RESET\nDSTDIR: $DSTDIR\n"
+echo -e "NEWIPADDRESS: $NEWIPADDRESS\nNEWPORT: $NEWPORT\nDOCKERMODE: $DOCKERMODE\nDATADIR: $DATADIR\nRESET: $RESET\nDSTDIR: $DSTDIR\nDUMB: $DUMB\n"
 
 echo 'started launch!'
 
@@ -104,14 +106,17 @@ echo "Starting tensorboard, training, inference and selector scripts..."
 # set logdir depending on docker
 LOGDIR=${DSTDIR}/runs/
 
-tensorboard --logdir ${LOGDIR} --port ${NEWPORTplus1} --bind_all --reuse_port=true --path_prefix='/tensorboard' &
-echo "tensorboard PID: $!"
-python -um IA.training &
-echo "Script training.py PID: $!"
-python -um IA.inference &
-echo "Script inference.py PID: $!"
-python -um IA.selector &
-echo "Script selector.py PID: $!"
+if [ "$DUMB" = false ]
+then
+  tensorboard --logdir ${LOGDIR} --port ${NEWPORTplus1} --bind_all --reuse_port=true --path_prefix='/tensorboard' &
+  echo "tensorboard PID: $!"
+  python -um IA.training &
+  echo "Script training.py PID: $!"
+  python -um IA.inference &
+  echo "Script inference.py PID: $!"
+  python -um IA.selector &
+  echo "Script selector.py PID: $!"
+fi
 python -um backend 
 
 reset_placeholders
