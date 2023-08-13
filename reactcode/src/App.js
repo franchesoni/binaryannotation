@@ -9,8 +9,6 @@ function App() {
   //=================================================================\\
   //Variable declaration
   const tensorboardPort = (parseInt(port) + 1).toString();
-  // const [selectedFiles, setSelectefFiles] = useState([]);
-  // const [image, setImage] = useState();
   const [imgPerSec, setImgPerSec] = useState(0);
   const [seconds, setSeconds] = useState(0);
   const [isActive, setIsActive] = useState(false);
@@ -20,7 +18,6 @@ function App() {
   const [imgPath, setImgPath] = useState("");
   const [imgProb, setImgProb] = useState(0);
   const [probImg, setProbImg] = useState(0.8);
-  // const [colorButton, setColorButton] = useState();
   const [imageSrc, setimageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   // const [previousUrlImg, setPreviousUrlImg] = useState();
@@ -32,7 +29,9 @@ function App() {
   const [autoMode, setAutoMode] = useState(false);
   const [annotation, setAnnotation] = useState(false);
   const [autoModeSpeed, setAutoModeSpeed] = useState(1);
-  const [numberOfImages, setNumberOfImages] = useState();
+  const [numberOfImages, setNumberOfImages] = useState(); 
+  const [numberOfTrue, setNumberOfTrue] = useState(0);
+  const [numberOfFalse, setNumberOfFalse] = useState(0);
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -50,11 +49,15 @@ function App() {
   }
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
-
-const annotateImage = async (label) => {
-    console.log('Annotating' + label)
+  const annotateImage = async (label, skipped) => {
     if (fetchInProgress) {
       return
+    }
+    if (label == true && skipped == false) {
+      setNumberOfTrue(numberOfTrue + 1)
+    }
+    else if (label == false && skipped == false) {
+      setNumberOfFalse(numberOfFalse + 1)
     }
     setFetchInProgress(true)
     setPreviousImgPath(imgPath)
@@ -66,7 +69,8 @@ const annotateImage = async (label) => {
       },
       body: JSON.stringify({
         is_positive: label,
-        image_path: imgPath 
+        image_path: imgPath,
+        is_skipped: skipped
       })
     })
       .then(response => {
@@ -101,10 +105,8 @@ const annotateImage = async (label) => {
     getImage() 
     getNumberImages()
   },[]);
-  useEffect(() => {
-    console.log('probImg' + probImg)
-  }, [probImg]);
-
+  //=================================================================\\
+  //UseEffect to change the color of the buttons according to the probability\\
   useEffect(() => {
     const root = document.documentElement;
     root.style.setProperty('--probabilityDog', probImg)
@@ -115,11 +117,8 @@ const annotateImage = async (label) => {
   useEffect(() => {
     setimageSrc(urlImg)
   }, [urlImg]);
-
-
-
   //=================================================================\\
-  //Simple function to get previous image and index\\
+  //Simple function to get previous image and index to undo the last annotation\\
   const undoAnnotation = () => {
     if (annotatedImages === 0){
       return
@@ -134,33 +133,31 @@ const annotateImage = async (label) => {
         setUrlImg(URL.createObjectURL(blob))
       })
   }
-
   //=================================================================\\
-  //UseEffect to create an event listener on keypress, refreshed every time we change the image\\
+  //Function to reset the annotations\\
   const resetAnnotations = () => {
     setIsActive(false)
     setSeconds(0)
     setAnnotatedImages(0)
-    fetch(fetchUrl + 'reset_annotation')
+    fetch(fetchUrl + 'reset_everything')
   }
   //=================================================================\\
   //UseEffect to create an event listener on keypress, refreshed every time we change the image\\
   useEffect(() => {
     const handleKeyDown = (event) => {
       if (isKeyPressed) {
-        return; // Si une touche est déjà enfoncée, ne rien faire
+        return; // If a key is already pressed, do nothing
       }
   
-      setIsKeyPressed(true); // Marquer qu'une touche est enfoncée
-  
-      // Votre logique existante pour gérer les touches individuelles
+      setIsKeyPressed(true);
+
       if (autoMode == false) {
         if (event.key === 'f') {
           setIsActive(true);
-          annotateImage(true);
+          annotateImage(true, false);
         } else if (event.key === 'j') {
           setIsActive(true);
-          annotateImage(false);
+          annotateImage(false, false);
         } else if (event.key === 'r') {
           resetAnnotations();
         } else if (event.code === 'Space') {
@@ -173,7 +170,7 @@ const annotateImage = async (label) => {
       else {
         if (event.code === 'Space') {
           event.preventDefault();
-          annotateImage(true)
+          annotateImage(true, false)
         }
         else if (event.key === 'Backspace') {
           undoAnnotation();
@@ -199,8 +196,6 @@ const annotateImage = async (label) => {
       document.removeEventListener('keyup', handleKeyUp);
     };
   }, [isKeyPressed, setIsKeyPressed, setIsActive, annotateImage, resetAnnotations, undoAnnotation, autoMode]);
-  
-
   //=================================================================\\
   //UseEffect to calculate the number of images per second and display it\\
   useEffect(() => {
@@ -215,9 +210,8 @@ const annotateImage = async (label) => {
       setImgPerSec(0)
     }
   }, [seconds]);
-
   //=================================================================\\
-  //UseEffect to start a timer\\
+  //UseEffect to start the timer\\
   useEffect(() => {
     let interval = null;
     console.log('annotation: ' + annotation)
@@ -230,9 +224,8 @@ const annotateImage = async (label) => {
     }
     return () => clearInterval(interval);
   }, [isActive]);
-
-
   //=================================================================\\
+  //Functions to change the contrast and brightness of the image\\
   const handleContrastChange = (event) => {
     const root = document.documentElement;
     const value = event.target.value;
@@ -246,20 +239,23 @@ const annotateImage = async (label) => {
     root.style.setProperty('--brightnessImg',value)
     setBrightnessImg(value);
     };
-
-  const handleAutoModeSpeedChange = (event) => {
-    setAutoModeSpeed(event.target.value)
-    };
-
+  //=================================================================\\
+  //Function to switch the mode between auto and manual\\
   const handleModeChange = (event) => {
     setAutoMode(!autoMode)
   }
-
+  //=================================================================\\
+  //Function to change the speed of the auto mode\\
+  const handleAutoModeSpeedChange = (event) => {
+    setAutoModeSpeed(event.target.value)
+    };
+  //=================================================================\\
+  //UseEffect to auto annotate automatically the image each second the user choose\\
   useEffect(() => {
     if (autoModeSpeed == 0) {return}
     if (autoMode == false) {return}
     const interval = setInterval(() => {
-      annotateImage(annotation)
+      annotateImage(annotation, false)
       setAnnotation(false)
     }, 1000/autoModeSpeed); // 1000 millisecondes = 1 seconde
 
@@ -274,6 +270,7 @@ const annotateImage = async (label) => {
         <img className='App-logo-borelli' src="/images/logoBorelli.png"/>
         <h1 className='App-title'>Binary annotation</h1>
         <h3 className='App-annotated-images'> Annotated images: {annotatedImages} / {numberOfImages}</h3>
+        <p className='App-true-false-annotated'> {numberOfTrue} true / {numberOfFalse} false</p>
         <p className='App-cronometer'>{seconds} seconds</p>
         <p className='App-cronometer'>{imgPerSec} img/s</p>
         <p>Probability: {probImg}%</p>
@@ -293,10 +290,7 @@ const annotateImage = async (label) => {
             </Slider>
             <p>{autoModeSpeed}</p>
           </div>
-          
         )}
-        
-        
         {imageSrc && (
           <div style={{display:'flex', alignItems:'center', justifyContent: 'space-between'}}>
             <img className="image previous" alt="Previous Image" src={imageSrc}/>
@@ -312,8 +306,8 @@ const annotateImage = async (label) => {
           max="3"
           value={contrastImg}
           step='0.01'
-          onChange={handleContrastChange}
-          ></Slider>
+          onChange={handleContrastChange}>
+          </Slider>
           <Slider 
           label="Brightness"
           type="range"
@@ -326,12 +320,12 @@ const annotateImage = async (label) => {
         </div>
         {!autoMode && (
           <div className='App-container-button'>
-          <button className='App-dogButton' onClick={() => annotateImage(true)}> Dog (positive) <br/> or press F </button>
-          <button className='App-catButton' onClick={() => annotateImage(false)}> Cat (negative) <br/> or press J </button>
+          <button className='App-dogButton' onClick={() => annotateImage(true, false)}> Dog (positive) <br/> or press F </button>
+          <button className='App-catButton' onClick={() => annotateImage(false, false)}> Cat (negative) <br/> or press J </button>
           <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
+          <button className='App-skipButton' onClick={() => annotateImage(false, true)}>Skip</button>
         </div>
         )}
-        
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
         <iframe src={`http://${IPAddress}:${tensorboardPort}/tensorboard`} width='1400' height='600'></iframe>
       </header>

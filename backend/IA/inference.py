@@ -7,7 +7,7 @@ import tqdm
 import torch
 from torch.utils.data import DataLoader
 
-from config import DEVICE, ckptpath, annfilepath, datadir, predspath
+from config import DEVICE, ckptpath, annfilepath, skippedfilepath, datadir, predspath
 from IA.training import Predictor
 from IA.dataset import FullDataset, UnlabeledDataset
 from IA.iotofiles import safely_write
@@ -16,7 +16,7 @@ print('finished importing packages in inference.py')
 def continuously_infer(ckptpath=ckptpath, batch_size=32):
     print('starting continuously_infer...')
     last_modified = 0
-    full_ds = FullDataset(annotation_file=annfilepath, datadir=datadir)
+    full_ds = FullDataset(annotation_file=annfilepath, skipped_file=skippedfilepath, datadir=datadir)
     while True:
         if Path(ckptpath).is_file():
             modified_at = Path(ckptpath).stat().st_mtime

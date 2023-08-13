@@ -13,7 +13,7 @@ from torch.utils.tensorboard.writer import SummaryWriter
 from IA.dataset import FullDataset, LabeledDataset, UnlabeledDataset
 from IA.iotofiles import safely_save_torch, safely_load_torch
 import IA.semisup as semisup
-from config import datadir, ckptpath, annfilepath, DEVICE, logdir
+from config import datadir, ckptpath, annfilepath, skippedfilepath, DEVICE, logdir
 print('finished importing packages in training.py')
 
 def get_mobilenet_v3_small(load_from):
@@ -114,7 +114,7 @@ def continuously_train(lr=0.001, batch_size=32, exp_avg=0.1, load_from=None, ann
     global swstep
     summary_writer = SummaryWriter(log_dir=Path(logdir).parent / (Path(logdir).stem+postfix))
     predictor = Predictor(load_from=load_from)  # load_from if using self-supervised learning
-    full_dataset = FullDataset(annotation_file=annfilepath, datadir=datadir)
+    full_dataset = FullDataset(annotation_file=annfilepath, skipped_file=skippedfilepath, datadir=datadir)
     epoch_n = 0
     while True:
         epoch_n += 1
