@@ -1,6 +1,7 @@
 print('importing packages in dataset.py')
 import random
 from pathlib import Path
+import collections.abc
 
 import torch
 from PIL import Image
@@ -16,6 +17,18 @@ def process_PIL(pil_img: Image) -> torch.Tensor:
     pil_img = pil_img.convert("RGB")  # needed to avoid grayscale
     return to_tensor(pil_img)
 
+class OrderedSet(collections.abc.Set):
+    def __init__(self, iterable=()):
+        self.d = collections.OrderedDict.fromkeys(iterable)
+
+    def __len__(self):
+        return len(self.d)
+
+    def __contains__(self, element):
+        return element in self.d
+
+    def __iter__(self):
+        return iter(self.d)
 
 class FullDataset:
     def __init__(self, skipped_file: str, annotation_file: str, datadir: str, extensions: list[str] = [".jpg", ".png"]):
@@ -46,7 +59,7 @@ class FullDataset:
             self.skipped_paths = safely_read(self.skipped_file)
 
         self.annotated_paths = list(self.annotations.keys())
-        self.to_annotate_paths = list(set(self.files) - set(self.annotated_paths) - set(self.skipped_paths))
+        self.to_annotate_paths = list(OrderedSet(self.files) - OrderedSet(self.annotated_paths) - OrderedSet(self.skipped_paths))
 
     def unlabeled_getitem(self, index: int) -> (int, str, torch.Tensor):
         chosen_file = self.to_annotate_paths[index]

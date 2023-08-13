@@ -3,7 +3,6 @@ print('importing packages in backend.py')
 from pathlib import Path
 import threading
 import time
-import os
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -18,7 +17,6 @@ print('finished importing packages in backend.py')
 class State:
     SEED = 0
     data_path = Path(datadir)
-
 
     def __init__(self):
         self.received_annotation = False
