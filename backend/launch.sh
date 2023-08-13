@@ -7,6 +7,7 @@ DOCKERMODE=${3:-true}
 # add datadir as fourth optional argument that defaults to /readonlydir
 DATADIR=${4:-/readonlydir}
 RESET=${5:-false}
+DSTDIR=${6:-/dstdir}
 
 print_help() {
   echo "Usage: launch.sh NEWIPADDRESS NEWPORT [DOCKERMODE] [DATADIR]"
@@ -15,6 +16,7 @@ print_help() {
   echo "  DOCKERMODE: whether to run in dockermode or not (defaults to true)"
   echo "  DATADIR: the path to the folder with images (defaults to /readonlydir)"
   echo "  RESET: should we start over or use the existing models and ananotations? (defaults to false)"
+  echo "  DSTDIR: the path to the folder where the models and annotations should be stored (defaults to $PWD/iodir)"
   echo -e "Example: launch.sh 127.0.0.1 8077 false /home/user/images\n\n"
   echo "Note that DATADIR is only used in localmode. In dockermode, the images are mounted as a volume."
 }
@@ -31,9 +33,16 @@ then
     echo "You are running in dockermode, but you supplied a custom datadir. Please use the default datadir."
     exit 1
 fi
+# raise error if dockermode is true and dstdir isn't default
+if [ "$DOCKERMODE" = true ] && [ "$DSTDIR" != "/dstdir" ]
+then
+    echo "You are running in dockermode, but you supplied a custom dstdir. Please use the default dstdir."
+    exit 1
+fi
+
 
 # print arguments
-echo -e "NEWIPADDRESS: $NEWIPADDRESS\nNEWPORT: $NEWPORT\nDOCKERMODE: $DOCKERMODE\nDATADIR: $DATADIR\n"
+echo -e "NEWIPADDRESS: $NEWIPADDRESS\nNEWPORT: $NEWPORT\nDOCKERMODE: $DOCKERMODE\nDATADIR: $DATADIR\nRESET: $RESET\nDSTDIR: $DSTDIR\n"
 
 echo 'started launch!'
 
@@ -49,6 +58,8 @@ reset_placeholders() {
   sed -i "s/${DOCKERMODE^}/DOCKERMODEPLACEHOLDER/g" config.py
   # reset datadir in config.py file
   sed -i "s|${DATADIR}|DATADIRPLACEHOLDER|g" config.py
+  # reset dstdir in config.py file
+  sed -i "s|${DSTDIR}|DSTDIRPLACEHOLDER|g" config.py
 }
 
 # Define a function to terminate all background processes
@@ -73,20 +84,7 @@ trap term_all_processes INT
 if [ "$RESET" = true ]
 then
     echo "Resetting..."
-    if [ "$DOCKERMODE" = true ]
-    then
-        echo "Running in dockermode"
-        rm -rf /iodir/runs/
-        rm /iodir/annotations.pickle
-        rm /iodir/predictor.ckpt
-    else
-        echo "Running in localmode"
-        rm -rf iodir/runs/
-        rm iodir/annotations.pickle
-        rm iodir/predictor.ckpt
-    fi
-    rm predictions.pickle
-    rm ranking.pickle
+    rm -rf $DSTDIR
 fi
 
 # set IP address and port in frontend
@@ -99,15 +97,12 @@ sed -i "s/PORTPLACEHOLDER/${NEWPORT}/g" config.py
 sed -i "s/DOCKERMODEPLACEHOLDER/${DOCKERMODE^}/g" config.py
 # set datadir in config.py file 
 sed -i "s|DATADIRPLACEHOLDER|${DATADIR}|g" config.py
+# set dstdir in config.py file
+sed -i "s|DSTDIRPLACEHOLDER|${DSTDIR}|g" config.py
 
 echo "Starting tensorboard, training, inference and selector scripts..."
 # set logdir depending on docker
-if [ "$DOCKERMODE" = true ]
-then
-    LOGDIR=/iodir/runs/
-else
-    LOGDIR=iodir/runs/
-fi
+LOGDIR=${DSTDIR}/runs/
 
 tensorboard --logdir ${LOGDIR} --port ${NEWPORTplus1} --bind_all --reuse_port=true --path_prefix='/tensorboard' &
 echo "tensorboard PID: $!"
