@@ -3,7 +3,6 @@ print('importing packages in backend.py')
 from pathlib import Path
 import threading
 import time
-import os
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -19,15 +18,15 @@ class State:
     SEED = 0
     data_path = Path(datadir)
 
-
     def __init__(self):
         self.received_annotation = False
         self.dataset = FullDataset(annotation_file=annfilepath, skipped_file=skippedfilepath, datadir=str(State.data_path))
-        self.annotations = {}
-        self.skipped_annotations = []
-        self.annotated = []
+        self.annotations = self.dataset.annotations
+        self.skipped_annotations = self.dataset.skipped_paths
+        self.annotated = self.dataset.annotated_paths
         self.next_to_annotate: tuple[str, int] | None = None
         self.ranking: list | None = None
+        self.nb_true = sum(self.annotations.values())
 
 state = State()
 state_lock = threading.Lock()
@@ -68,11 +67,11 @@ app = FastAPI(
 async def helloworld():
     return {"Hello": "World"}
 
-
 @app.get("/get_next_img")
 def get_next_img():
     global state
     global state_lock
+    
     seconds = 0
     while state.ranking is None:
         print(f'been waiting for ranking for {seconds}s...')
@@ -81,8 +80,6 @@ def get_next_img():
     for (image_path, prob) in state.ranking:  # get image from ranking
         if image_path not in state.annotations:
             break
-    print('======================================')
-    print(image_path)
     return return_path_prob(image_path, prob)
 
 def return_path_prob(image_path: str, prob:int):
@@ -123,6 +120,7 @@ async def add_annotation(request: Request):
         state.next_to_annotate = None
         assert state.annotated[-1] is not None, "you shouldn't overwrite an element referenced elsewhere"
         state.annotations[image_path] = is_positive
+        state.nb_true = sum(state.annotations.values())
     state.received_annotation = True
     state_lock.release()
     safely_write(annfilepath, state.annotations)
@@ -141,6 +139,7 @@ async def reset_everything(request: Request):
     state.annotated = []
     #clear the json
     state.annotations = {}
+    state.nb_true = sum(state.annotations.values())
     state_lock.release()
     safely_write(annfilepath, state.annotations)
 
@@ -158,6 +157,7 @@ async def undo_annotation():
     state.annotated = state.annotated[:-1]
     state.next_to_annotate = None
     del state.annotations[previous_image_path]
+    state.nb_true = sum(state.annotations.values())
     state_lock.release()
     safely_write(annfilepath, state.annotations)
     #send path and index to front
@@ -168,8 +168,10 @@ async def undo_annotation():
 @app.get("/count_images")
 def count_images():
     try:
-        num_images = len(state.dataset)  
-        return {"folder_path": Path(datadir), "num_images": num_images}
+        num_images = len(state.dataset) 
+        num_images_annotated = len(state.annotations)
+        num_true = state.nb_true
+        return {"folder_path": Path(datadir), "num_images": num_images, 'num_images_annotated' : num_images_annotated, 'num_true': num_true}
     except FileNotFoundError:
         return {"error": "Le chemin du dossier est introuvable."}
     except Exception as e:

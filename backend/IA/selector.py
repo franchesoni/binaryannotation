@@ -1,5 +1,4 @@
 print('importing packages in selector.py')
-import os
 import time
 from pathlib import Path
 
@@ -23,7 +22,7 @@ def random_selector(predictions: dict):
 def max_entropy_selector(predictions):
     probs = np.array(list(predictions.values()))
     scores = np.abs(probs - 0.5)  # smaller is better
-    indices = np.argsort(scores)  # smaller first
+    indices = np.argsort(scores, kind='stable')  # smaller first
     predlist = np.array(list(predictions.items()))
     predlist = predlist[indices]
     return predlist
@@ -33,7 +32,7 @@ def min_entropy_selector(predictions):
     probs = np.array([p[1] for p in predlist])
     valid_probs = probs[probs >= 0]
     scores = -np.abs(valid_probs - 0.5)  # smaller is better
-    indices = np.argsort(scores)  # smaller first
+    indices = np.argsort(scores, kind='stable')  # smaller first
     predlist = np.concatenate((predlist[probs >=0][indices], predlist[probs < 0]), axis=0)
     return predlist
 
@@ -50,7 +49,7 @@ def max_prob_selector(predictions: dict):
     print('selector: max_prob_selector')
     predlist = list(predictions.items())
     probs = np.array([p[1] for p in predlist])
-    indices = np.argsort(-probs)  # smaller first
+    indices = np.argsort(-probs, kind='stable')  # smaller first
     print(type(predlist), type(predlist[0]), type(indices))
     predlist = [predlist[ind] for ind in indices]
     return predlist
@@ -82,7 +81,7 @@ def init_ranking(state, rankingpath=rankingpath):
     # create ranking
     paths = state.dataset.to_annotate_paths
     probs = np.ones(len(paths)) * 0.5
-    ranking = zip(paths, list(probs))
+    ranking = list(zip(paths, list(probs)))
     safely_write(rankingpath, ranking)
     print(">>> ranking initialized")
 
