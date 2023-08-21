@@ -24,7 +24,7 @@ class State:
         self.annotations = self.dataset.annotations
         self.skipped_annotations = self.dataset.skipped_paths
         self.annotated = self.dataset.annotated_paths
-        self.next_to_annotate: tuple[str, int] | None = None
+        self.next_to_annotate: list[tuple[str, int]] = []
         self.ranking: list | None = None
         self.nb_true = sum(self.annotations.values())
 
@@ -78,7 +78,7 @@ def get_next_img():
         seconds += 1
         time.sleep(1)
     for (image_path, prob) in state.ranking:  # get image from ranking
-        if image_path not in state.annotations:
+        if (image_path not in state.annotations) and (image_path != state.next_to_annotate[0][0] if len(state.next_to_annotate) else True):
             break
     return return_path_prob(image_path, prob)
 
@@ -88,7 +88,8 @@ def return_path_prob(image_path: str, prob:int):
     # get the image path
     state_lock.acquire()
     state.received_annotation = False
-    state.next_to_annotate = (image_path, prob)
+    state.next_to_annotate.append((image_path, prob))
+    assert len(state.next_to_annotate) <3, "This list is growing too much"
     state_lock.release()
     response = FileResponse(
         image_path, headers={"image_path": image_path, "prob": str(prob)}
@@ -108,16 +109,15 @@ async def add_annotation(request: Request):
     is_skipped = bool(body['is_skipped'])
     print('====================================')
     print(is_skipped)
-    assert state.next_to_annotate is not None, "this variable should have been set in the last get_next_image call"  # make sure we call get_next_img or undo_annotation before
-    assert state.next_to_annotate[0] == image_path, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
+    assert state.next_to_annotate[0][0] == image_path, "new annotation should be on the last image got"  # make sure we call get_next_img or undo_annotation before
     state_lock.acquire()
     if (is_skipped == True):
         state.skipped_annotations.append(image_path)
-        state.next_to_annotate = None
+        state.next_to_annotate = state.next_to_annotate[1:]
     else:
         # add the image_index to the annotated_indices
-        state.annotated = state.annotated + [state.next_to_annotate]
-        state.next_to_annotate = None
+        state.annotated = state.annotated + [state.next_to_annotate[0]]
+        state.next_to_annotate = state.next_to_annotate[1:]
         assert state.annotated[-1] is not None, "you shouldn't overwrite an element referenced elsewhere"
         state.annotations[image_path] = is_positive
         state.nb_true = sum(state.annotations.values())
@@ -155,7 +155,7 @@ async def undo_annotation():
     assert previous_image_path in state.annotations, "previous index should be among the annotations"    
     state_lock.acquire()
     state.annotated = state.annotated[:-1]
-    state.next_to_annotate = None
+    state.next_to_annotate = state.next_to_annotate[1:]
     del state.annotations[previous_image_path]
     state.nb_true = sum(state.annotations.values())
     state_lock.release()

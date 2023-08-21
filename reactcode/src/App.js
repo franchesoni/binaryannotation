@@ -18,7 +18,7 @@ function App() {
   const [imgPath, setImgPath] = useState("");
   const [imgProb, setImgProb] = useState(0);
   const [probImg, setProbImg] = useState(0.8);
-  const [imageSrc, setimageSrc] = useState('');
+  const [imageSrc, setImageSrc] = useState('');
   const [urlImg, setUrlImg] = useState();
   // const [previousUrlImg, setPreviousUrlImg] = useState();
   const [fetchInProgress, setFetchInProgress] = useState(false);
@@ -32,6 +32,11 @@ function App() {
   const [numberOfImages, setNumberOfImages] = useState(); 
   const [numberOfTrue, setNumberOfTrue] = useState(0);
   const [numberOfFalse, setNumberOfFalse] = useState(0);
+  const [nextImgProb, setNextImgProb] = useState(0);
+  const [nextImgPath, setNextImgPath] = useState();
+  const [nextProbImg, setNextProbImg] = useState();
+  const [nextUrlImg, setNextUrlImg] = useState();
+  const [nextImageSrc, setNextImageSrc] = useState();
   //=================================================================\\
   //First fetch function to get the next image, just a simple get and  it returns the image's index and the blob\\
   const getImage = async () => {
@@ -41,11 +46,32 @@ function App() {
         setImgProb(response.headers.get('prob'))
         const roundedProb = Number.parseFloat(imgProb)
         setProbImg(roundedProb.toFixed(3)*100)
-        return response.blob().then(blob => ({ blob, imgPath }));
+        return response.blob().then(blob => ({blob}));
       })
       .then(({blob}) => {
         setUrlImg(URL.createObjectURL(blob))
       });
+  }
+
+  const preloadNextImage = async () => {
+    await fetch(fetchUrl + 'get_next_img')
+    .then(response => {
+      setNextImgPath(response.headers.get('image_path'))
+      setNextImgProb(response.headers.get('prob'))
+      const roundedProb = Number.parseFloat(nextImgProb)
+      setNextProbImg(roundedProb.toFixed(3)*100)
+      return response.blob().then(blob => ({ blob}));
+    })
+    .then(({blob}) => {
+      setNextUrlImg(URL.createObjectURL(blob))
+    })
+  }
+
+  const nextToCurrentImg = () => {
+    setImgPath(nextImgPath)
+    setImgProb(nextImgProb)
+    setProbImg(nextProbImg)
+    setUrlImg(nextUrlImg)
   }
   //=================================================================\\
   //Second fetch function to annotate the image (true or false), a simple post where we send the index and the boolean\\
@@ -76,7 +102,9 @@ function App() {
       .then(response => {
         return response.json();
       })
-      .then(() => {getImage()})
+      .then (() => {nextToCurrentImg()})
+      .then(() => {preloadNextImage()})
+      
       .then(() => setAnnotatedImages(annotatedImages + 1))
       .catch(error => console.error('Error:', error))
       .finally(() => setFetchInProgress(false));
@@ -106,8 +134,13 @@ function App() {
   //UseEffect activated when the user refresh the page to have the first image and the number of images to annotate\\
   useEffect(() =>{
     getImage() 
+    preloadNextImage()
     getNumberImages()
   },[]);
+  useEffect(() => {
+    console.log(imgPath)
+    console.log(nextImgPath)
+  }, [imgPath, nextImgPath]);
   //=================================================================\\
   //UseEffect to change the color of the buttons according to the probability\\
   useEffect(() => {
@@ -118,8 +151,9 @@ function App() {
   //=================================================================\\
   //UseEffect to change the image's source when we fetch a new image\\
   useEffect(() => {
-    setimageSrc(urlImg)
-  }, [urlImg]);
+    setImageSrc(urlImg)
+    setNextImageSrc(nextUrlImg)
+  }, [urlImg, nextUrlImg]);
   //=================================================================\\
   //Simple function to get previous image and index to undo the last annotation\\
   const undoAnnotation = () => {
@@ -299,7 +333,7 @@ function App() {
           <div style={{display:'flex', alignItems:'center', justifyContent: 'space-between'}}>
             <img className="image previous" alt="Previous Image" src={imageSrc}/>
             <img className='image main' src={imageSrc}/>
-            <img className="image next" src={imageSrc} alt="Next Image"/>
+            <img className="image next" src={nextImageSrc} alt="Next Image"/>
           </div>
         )}
         <div className='App-container-sliders'>
