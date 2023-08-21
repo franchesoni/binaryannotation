@@ -95,7 +95,7 @@ function App() {
       },
       body: JSON.stringify({
         is_positive: label,
-        image_path: nextImgPath,
+        image_path: imgPath,
         is_skipped: skipped
       })
     })
