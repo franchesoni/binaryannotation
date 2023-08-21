@@ -94,6 +94,9 @@ function App() {
     .then((data) => {
       console.log(data.num_images)
       setNumberOfImages(data.num_images);
+      setAnnotatedImages(data.num_images_annotated)
+      setNumberOfTrue(data.num_true)
+      setNumberOfFalse(data.num_images_annotated - data.num_true)
     })
     .catch((error) => {
       console.log(error.message);
@@ -123,7 +126,7 @@ function App() {
     if (annotatedImages === 0){
       return
     }
-    setAnnotatedImages(annotatedImages-1)
+    
     fetch(fetchUrl + 'undo_annotation')
       .then(response => {
         setImgPath(response.headers.get('image_path'))
@@ -132,6 +135,7 @@ function App() {
       .then(({blob}) => {
         setUrlImg(URL.createObjectURL(blob))
       })
+      getNumberImages()
   }
   //=================================================================\\
   //Function to reset the annotations\\
