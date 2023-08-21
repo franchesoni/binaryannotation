@@ -54,7 +54,7 @@ class FullDataset:
         else:
             self.annotations = safely_read(self.annotation_file)
         if not self.skipped_file.exists():
-            self.skipped_paths = {}
+            self.skipped_paths = []
         else:
             self.skipped_paths = safely_read(self.skipped_file)
 
