@@ -26,6 +26,10 @@ This constitutes a sort of loop, but in fact all scripts are constantly running 
 
 
 
+**notes**
+remember to use npm > 18 to compile reactcode to js code (build2)
+
+
 
 
 
