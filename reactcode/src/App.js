@@ -164,12 +164,16 @@ function App() {
     fetch(fetchUrl + 'undo_annotation')
       .then(response => {
         setImgPath(response.headers.get('image_path'))
-        return response.blob().then(blob => ({ blob, imgPath}));
+        setImgProb(response.headers.get('prob'))
+        const roundedProb = Number.parseFloat(imgProb)
+        setProbImg(roundedProb.toFixed(3)*100)
+        return response.blob().then(blob => ({blob}));
       })
       .then(({blob}) => {
         setUrlImg(URL.createObjectURL(blob))
-      })
-      getNumberImages()
+      });
+    preloadNextImage()
+    getNumberImages()
   }
   //=================================================================\\
   //Function to reset the annotations\\

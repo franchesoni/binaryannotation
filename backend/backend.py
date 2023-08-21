@@ -24,7 +24,7 @@ class State:
         self.annotations = self.dataset.annotations
         self.skipped_annotations = self.dataset.skipped_paths
         self.annotated = self.dataset.annotated_paths
-        self.next_to_annotate: list[tuple[str, int]] = []
+        self.next_to_annotate: list[tuple(str, float)] = []
         self.ranking: list | None = None
         self.nb_true = sum(self.annotations.values())
 
@@ -55,6 +55,11 @@ def continuously_update_ranking(rankingpath=rankingpath):
 
 process_thread = threading.Thread(target=continuously_update_ranking)
 process_thread.start()
+seconds = 0
+while state.ranking is None:
+    print(f'been waiting for ranking for {seconds}s...')
+    seconds += 1
+    time.sleep(1)
 
 app = FastAPI(
     title="Cat or Dog?",
@@ -71,14 +76,8 @@ async def helloworld():
 def get_next_img():
     global state
     global state_lock
-    
-    seconds = 0
-    while state.ranking is None:
-        print(f'been waiting for ranking for {seconds}s...')
-        seconds += 1
-        time.sleep(1)
     for (image_path, prob) in state.ranking:  # get image from ranking
-        if (image_path not in state.annotations) and (image_path != state.next_to_annotate[0][0] if len(state.next_to_annotate) else True):
+        if (image_path not in state.annotations) and (image_path != state.next_to_annotate[0][0] if isinstance(state.next_to_annotate, list) and len(state.next_to_annotate) else True):
             break
     return return_path_prob(image_path, prob)
 
@@ -89,7 +88,7 @@ def return_path_prob(image_path: str, prob:int):
     state_lock.acquire()
     state.received_annotation = False
     state.next_to_annotate.append((image_path, prob))
-    assert len(state.next_to_annotate) <3, "This list is growing too much"
+    assert len(state.next_to_annotate) < 3, "This list is growing too much"
     state_lock.release()
     response = FileResponse(
         image_path, headers={"image_path": image_path, "prob": str(prob)}
@@ -113,14 +112,13 @@ async def add_annotation(request: Request):
     state_lock.acquire()
     if (is_skipped == True):
         state.skipped_annotations.append(image_path)
-        state.next_to_annotate = state.next_to_annotate[1:]
     else:
         # add the image_index to the annotated_indices
         state.annotated = state.annotated + [state.next_to_annotate[0]]
-        state.next_to_annotate = state.next_to_annotate[1:]
         assert state.annotated[-1] is not None, "you shouldn't overwrite an element referenced elsewhere"
         state.annotations[image_path] = is_positive
         state.nb_true = sum(state.annotations.values())
+    state.next_to_annotate = state.next_to_annotate[1:]  # we have annotated this image
     state.received_annotation = True
     state_lock.release()
     safely_write(annfilepath, state.annotations)
@@ -129,19 +127,19 @@ async def add_annotation(request: Request):
     # print('state.annotations', state.annotations)
     return {"success": True}
 
-@app.get('/reset_everything')
-async def reset_everything(request: Request):
-    #add the tab with the annotated image to the tab with all the index
-    global state
-    global state_lock
-    state_lock.acquire()
-    #clear the tab with the annotated image
-    state.annotated = []
-    #clear the json
-    state.annotations = {}
-    state.nb_true = sum(state.annotations.values())
-    state_lock.release()
-    safely_write(annfilepath, state.annotations)
+# @app.get('/reset_everything')
+# async def reset_everything(request: Request):
+#     #add the tab with the annotated image to the tab with all the index
+#     global state
+#     global state_lock
+#     state_lock.acquire()
+#     #clear the tab with the annotated image
+#     state.annotated = []
+#     #clear the json
+#     state.annotations = {}
+#     state.nb_true = sum(state.annotations.values())
+#     state_lock.release()
+#     safely_write(annfilepath, state.annotations)
 
 
 @app.get('/undo_annotation')
@@ -155,7 +153,7 @@ async def undo_annotation():
     assert previous_image_path in state.annotations, "previous index should be among the annotations"    
     state_lock.acquire()
     state.annotated = state.annotated[:-1]
-    state.next_to_annotate = state.next_to_annotate[1:]
+    state.next_to_annotate = [] 
     del state.annotations[previous_image_path]
     state.nb_true = sum(state.annotations.values())
     state_lock.release()
