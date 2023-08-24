@@ -304,7 +304,7 @@ function App() {
     return () => {
       clearInterval(interval); // Nettoyage de l'intervalle lors de la suppression du composant
     };
-  }, [imgPath, autoMode, annotation, autoModeSpeed]);
+  }, [imgPath, autoMode, annotation, autoModeSpeed, nextImgPath, nextUrlImg, urlImg]);
 
   return (
     <div className="App">
