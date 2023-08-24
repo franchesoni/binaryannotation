@@ -145,8 +145,8 @@ function App() {
   //UseEffect to change the color of the buttons according to the probability\\
   useEffect(() => {
     const root = document.documentElement;
-    root.style.setProperty('--probabilityDog', probImg)
-    root.style.setProperty('--probabilityCat', 100 - (probImg))
+    root.style.setProperty('--probabilityPos', probImg)
+    root.style.setProperty('--probabilityNeg', 100 - (probImg))
   }, [probImg]);
   //=================================================================\\
   //UseEffect to change the image's source when we fetch a new image\\
@@ -201,13 +201,18 @@ function App() {
           setIsActive(true);
           annotateImage(false, false);
         } else if (event.key === 'r') {
-          resetAnnotations();
+          console.log("if you really want to reset rebuild the frontend code :)")
+          // resetAnnotations();
         } else if (event.code === 'Space') {
           event.preventDefault();
           setIsActive(false);
         } else if (event.key === 'Backspace') {
           undoAnnotation();
+        } else if (event.key === 's') {
+          setIsActive(true);
+          annotateImage(true, false);
         }
+
       }
       else {
         if (event.code === 'Space') {
@@ -362,10 +367,10 @@ function App() {
         </div>
         {!autoMode && (
           <div className='App-container-button'>
-          <button className='App-dogButton' onClick={() => annotateImage(true, false)}> Dog (positive) <br/> or press F </button>
-          <button className='App-catButton' onClick={() => annotateImage(false, false)}> Cat (negative) <br/> or press J </button>
+          <button className='App-posButton' onClick={() => annotateImage(true, false)}> Positive <br/> or press F </button>
+          <button className='App-negButton' onClick={() => annotateImage(false, false)}> Negative <br/> or press J </button>
           <button className='App-undoButton' onClick={() => undoAnnotation()}>Undo (or press backspace)</button>
-          <button className='App-skipButton' onClick={() => annotateImage(false, true)}>Skip</button>
+          <button className='App-skipButton' onClick={() => annotateImage(false, true)}>Skip <br/> or press S</button>
         </div>
         )}
         <p style={{fontSize:15}}>Press space to pause the timer and r to reset it</p>
