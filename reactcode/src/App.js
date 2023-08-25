@@ -79,6 +79,7 @@ function App() {
     if (fetchInProgress) {
       return
     }
+    if(nextImgPath == null) {return}
     if (label == true && skipped == false) {
       setNumberOfTrue(numberOfTrue + 1)
     }
@@ -103,6 +104,7 @@ function App() {
         return response.json();
       })
       .then (() => {nextToCurrentImg()})
+      .then (() => setNextImgPath(null))
       .then(() => {preloadNextImage()})
       
       .then(() => setAnnotatedImages(annotatedImages + 1))
