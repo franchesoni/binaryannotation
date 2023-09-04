@@ -88,6 +88,7 @@ function App() {
     setFetchInProgress(true)
     setPreviousImgPath(imgPath)
     // setPreviousUrlImg(urlImg)
+    nextToCurrentImg()
     await fetch(fetchUrl + 'add_annotation', {
       method: 'POST',
       headers: {
@@ -102,7 +103,7 @@ function App() {
       .then(response => {
         return response.json();
       })
-      .then (() => {nextToCurrentImg()})
+      // .then (() => {nextToCurrentImg()})
       .then(() => {preloadNextImage()})
       
       .then(() => setAnnotatedImages(annotatedImages + 1))
