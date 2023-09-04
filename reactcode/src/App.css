@@ -3,8 +3,8 @@
   --dogButton-hoverColor: #ccc;
   --catButton-color: #e0e0e0;
   --catButton-hoverColor: #ccc;
-  --probabilityDog: 50;
-  --probabilityCat: 50;
+  --probabilityPos: 50;
+  --probabilityNeg: 50;
   --contrastImg: 1;
   --brightnessImg:1;
 }
@@ -61,11 +61,11 @@
   display: flex;
   margin-top: 10px;
 }
-.App-dogButton {
+.App-posButton {
   display: inline-block;
   padding: 10px 20px;
   margin: 0 10px;
-  background-color: hsl(var(--probabilityDog), 70%, 50%);
+  background-color: hsl(var(--probabilityPos), 70%, 50%);
   border: none;
   border-radius: 15px;
   color: #333;
@@ -74,15 +74,15 @@
   transition: background-color 0.5s;
 }
 
-.App-dogButton:hover {
-  background-color: var(--dogButton-hoverColor);
+.App-posButton:hover {
+  background-color: hsl(var(--probabilityPos), 70%, 40%);
 }
 
-.App-catButton {
+.App-negButton {
   display: inline-block;
   padding: 10px 20px;
   margin: 0 10px;
-  background-color: hsl(var(--probabilityCat), 70%, 50%);
+  background-color: hsl(var(--probabilityNeg), 70%, 50%);
   border: none;
   border-radius: 15px;
   color: #333;
@@ -91,8 +91,8 @@
   transition: background-color 0.5s;
 }
 
-.App-catButton:hover {
-  background-color: var(--catButton-hoverColor);
+.App-negButton:hover {
+  background-color: hsl(var(--probabilityNeg), 70%, 40%);
 }
 
 .App-undoButton {

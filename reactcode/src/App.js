@@ -79,6 +79,7 @@ function App() {
     if (fetchInProgress) {
       return
     }
+    if(nextImgPath == null) {return}
     if (label == true && skipped == false) {
       setNumberOfTrue(numberOfTrue + 1)
     }
@@ -104,6 +105,7 @@ function App() {
         return response.json();
       })
       // .then (() => {nextToCurrentImg()})
+      .then (() => setNextImgPath(null))
       .then(() => {preloadNextImage()})
       
       .then(() => setAnnotatedImages(annotatedImages + 1))
@@ -310,7 +312,7 @@ function App() {
     return () => {
       clearInterval(interval); // Nettoyage de l'intervalle lors de la suppression du composant
     };
-  }, [imgPath, autoMode, annotation, autoModeSpeed]);
+  }, [imgPath, autoMode, annotation, autoModeSpeed, nextImgPath, nextUrlImg, urlImg]);
 
   return (
     <div className="App">
