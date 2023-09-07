@@ -9,7 +9,7 @@ npm run build2
 cd ../backend
 # # to know how it works:
 bash launch.sh  
-# # to run at ports 8077 and 8078 (tensorboard), without resetting and with AI training on the background
+# # to run the annotation of folder `data/uk_annotation` at ports 8077 and 8078 (tensorboard), without resetting and with AI training on the background
 bash launch.sh localhost 8077 false /datasets/home/FMarchesoni/data/uk_annotation false examplerunname false
 ```
 
