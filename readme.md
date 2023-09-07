@@ -1,16 +1,26 @@
 # USE:
+first:
+- make sure your python version has the packages in `requirements.txt` installed
+- ssh tunnel your desired ports to your machine 
+
+```
+cd backend
+# # to know how it works:
+bash launch.sh  
+# # to run the annotation of folder `data/uk_annotation` at ports 8077 and 8078 (tensorboard), without resetting and with AI training on the background
+bash launch.sh localhost 8077 false /datasets/home/FMarchesoni/data/uk_annotation false examplerunname false
+```
+
+# DEV
+if you want to build the frontend
+- get nvm (node version manager)
+
 ```
 # use node 18 to build react code
 cd reactcode
 nvm use --lts 
 npm install
 npm run build2
-# come back and run app 
-cd ../backend
-# # to know how it works:
-bash launch.sh  
-# # to run the annotation of folder `data/uk_annotation` at ports 8077 and 8078 (tensorboard), without resetting and with AI training on the background
-bash launch.sh localhost 8077 false /datasets/home/FMarchesoni/data/uk_annotation false examplerunname false
 ```
 
 ---
