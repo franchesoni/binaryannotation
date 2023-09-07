@@ -1,4 +1,20 @@
+# USE:
+```
+# use node 18 to build react code
+cd reactcode
+nvm use --lts 
+npm install
+npm run build2
+# come back and run app 
+cd ../backend
+# # to know how it works:
+bash launch.sh  
+# # to run at ports 8077 and 8078 (tensorboard), without resetting and with AI training on the background
+bash launch.sh localhost 8077 false /datasets/home/FMarchesoni/data/uk_annotation false examplerunname false
+```
 
+---
+# OLD
 - ports 8077 and 8078 will be used for the webapp and tensorboard respectively. These are arbitrary numbers that should be manually modified if desired. 
 
 # writing your custom app
