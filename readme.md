@@ -1,18 +1,48 @@
+# Intelligent Annotation - Binary Classification
+![_8f2ba80f-7689-4327-84f7-78d8d6e4bd5e](https://github.com/franchesoni/binaryannotation/assets/24411007/08b53d80-8a5e-4df9-84da-a0e6fac6c34b)
+This tool allows you to more quickly annotate an image dataset with binary classes leveraging AI. Our app is **MINIMALISTIC**.
+---
+# FEATURES:
+- **active learning**
+- **automatic mode**
+- **contrast & brightness** change
+- **resume** annotation sessions
+- **export** your predictor
+- online annotation **performance statistics**
+  
+
+
+# Summary
+## Why should you use this app?
+This is the best we have come up with regarding annotation speed for binary classification of images. Surprisingly, it's extremely simple.
+We have considered active learning, semi-supervised learning, showing images in batches, run length encoding, mathematically optimal orderings. But we found that the good old supervised learning and entropy (balanced data) or max-probability (unbalanced data) active learning is the best.
+On top, the best user experience is either labeling as positive or negative manually, or having the machine label everything as negative if you didn't say positive before some configurable time (the AUTO mode).
+Because a model is trained continuously on the background to help you with Intelligent Annotation (IA), once you're done annotating or find that the model is always right, you can export it or let it annotate the whole data. Thus this is a **human-in-the-loop learning solution**.
+
+## Our usecase
+By default it's designed to annotate a large dataset of images with binary classes. In particular we assume that the positive class is the minority class.
+As active learning, the entropy is an incredibly good baseline. However, we care about annotation speed, and we have found that the fastest way to annotate is to provide many samples from the same class. Because there is a minority class, we choose to show those samples first.
+
 # USE:
 first:
 - make sure your python version has the packages in `requirements.txt` installed
-- ssh tunnel your desired ports to your machine 
-
-```
-cd backend
-# # to know how it works:
-bash launch.sh  
-# # to run the annotation of folder `data/uk_annotation` at ports 8077 and 8078 (tensorboard), without resetting and with AI training on the background
-bash launch.sh localhost 8077 false /datasets/home/FMarchesoni/data/uk_annotation false examplerunname false
-```
+- (if running remote) ssh tunnel your desired ports to your machine
+- clone the repo and open it
+- run the following commands (assuming Linux)
+  ```
+  cd backend
+  # # to know how it works:
+  bash launch.sh  
+  # # to run the annotation of folder `path/to/your/data` at ports 8077 and 8078 (tensorboard), without resetting and with AI training on the background
+  bash launch.sh localhost 8077 false path/to/your/data false examplerunname false
+  ```
+  _note: docker mode is not available at the moment_
+- annotate
+- open issues for any question
 
 # DEV
-if you want to build the frontend
+### frontend
+- modify the code in `reactcode/`
 - get nvm (node version manager)
 
 ```
@@ -22,24 +52,20 @@ nvm use --lts
 npm install
 npm run build2
 ```
+### backend
+It's just Python FastAPI. 
 
----
-# OLD
-- ports 8077 and 8078 will be used for the webapp and tensorboard respectively. These are arbitrary numbers that should be manually modified if desired. 
 
-# writing your custom app
-https://github.com/babouslt/dogsandcats/tree/master
-docker image 
-
+## Code structure
 This app involves many modules and intercommunication between them. They're better understood from the file descriptions below. Customize them as needed, although we provide a potentially useful starting point.
 For simplicity, we use pickle-based communication (with the exception of `torch.save`, which is similar).
 
 We have:
 - `config.py`: Defines useful variables such as `dev, device, datadir`, etc.. 
 - `IA/dataset.py`: Implements `LabeledDataset` and `UnlabeledDataset` classes. Each class subclasses pytorch Dataset. Both list the files for each dataset. The first returns `imgindex, img, label` and the second returns `imgindex, img`. 
-- `IA/training.py`: Has the predictor and the training functions that given a predictor update and save it. Here we can implement pretraining (e.g. self-supervised learning) and (semi-)supervised learning.
+- `IA/training.py`: Has the predictor and the training functions that given a predictor update and save it. Here we can implement pretraining (e.g. self-supervised learning) and (semi-)supervised learning. **Here is where you define another network if you have one.**
 - `IA/inference.py`: Runs inference over the dataset and saves the probabilities to a file.
-- `IA/selector.py`: Loads the probabilities from the file and provides a ranking of files, indices and probabilities. 
+- `IA/selector.py`: Loads the probabilities from the file and provides a ranking of files, indices and probabilities. **We use `max_prob` as a criterion by default.**
 - `backend.py`: It serves the app, continuously reads the ranking and updates the annotations.
 
 We implement file-based communication, in particular we store data in:
@@ -52,21 +78,5 @@ This constitutes a sort of loop, but in fact all scripts are constantly running 
 
 
 
-**notes**
-remember to use npm > 18 to compile reactcode to js code (build2)
 
 
-
-
-
-
-# using docker
-`docker build -t binaryannotation .`
-`docker run -p 8000:8000 -v PATHTOFOLDERCONTAININGkagglecatsanddogs_3367a:/archive binaryannotation`
-
-# dev (no docker)
-given that everything is correctly installed, we do:
-`python backend.py --reload`
-
-download command (from get wget browser extension)
-wget --header="Host: storage.googleapis.com" --header="User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36 Edg/115.0.0.0" --header="Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7" --header="Accept-Language: en,es-419;q=0.9,es;q=0.8,fr;q=0.7,pt-BR;q=0.6,pt;q=0.5" --header="Referer: https://www.kaggle.com/" "https://storage.googleapis.com/kaggle-data-sets/630856/1122723/bundle/archive.zip?X-Goog-Algorithm=GOOG4-RSA-SHA256&X-Goog-Credential=gcp-kaggle-com%40kaggle-161607.iam.gserviceaccount.com%2F20230525%2Fauto%2Fstorage%2Fgoog4_request&X-Goog-Date=20230525T132759Z&X-Goog-Expires=259200&X-Goog-SignedHeaders=host&X-Goog-Signature=681c6465ca6dce83498aba370371c2123a1914ba2a5ab5c27d458e4e96e8d2b98fbd5f8b622e0f284ce42ff08ec2031a975ff8a1ba36c6a44ef4a87f4517ab5996b97344569d4e943f0af6e746b06d5a99047eac6f96a81afa1e1dc04fa1465cae899bb1edded755a707d40379ce87ea93aa64bffab2f95800b7ac1fba278d267673cbd297e4bed7d7493aef61fb90bb7a2d9e2fc46906d851d474c429991187d77bfec3b1a608ed90eefb39a6e251349a9034c4be04149e099dc2f3671e3c4b2212258e39fbf992d7352539d4cf7e997bee9ad74ebab2a6140f19b54429c0da2c153d25c0e6856cfdb8ac402865852072b338afbed0b884d9c30fabf772cd90" -c -O 'archive.zip'
