@@ -30,9 +30,8 @@ class State:
 
 state = State()
 state_lock = threading.Lock()
+
 update_ranking = True
-
-
 def continuously_update_ranking(rankingpath=rankingpath):
     global state
     global state_lock
@@ -41,7 +40,7 @@ def continuously_update_ranking(rankingpath=rankingpath):
     while update_ranking:
         if Path(rankingpath).is_file():
             modified_at = Path(rankingpath).stat().st_mtime
-            if last_modified < modified_at:
+            if last_modified < modified_at or state.ranking is None:
                 ranking = safely_read(rankingpath)
                 state_lock.acquire()
                 state.ranking = ranking
@@ -55,17 +54,34 @@ def continuously_update_ranking(rankingpath=rankingpath):
 
 process_thread = threading.Thread(target=continuously_update_ranking)
 process_thread.start()
-seconds = 0
-while state.ranking is None:
-    print(f'been waiting for ranking for {seconds}s...')
-    seconds += 1
-    time.sleep(1)
+# seconds = 0
+# while state.ranking is None:
+#     print(f'been waiting for ranking for {seconds}s...')
+#     seconds += 1
+#     time.sleep(1)
 
 app = FastAPI(
     title="Cat or Dog?",
     description="A simple app to annotate images as cats or dogs.",
     version="0.1",
 )
+
+@app.get('/reset_state')
+async def reset_state(request: Request):
+    #add the tab with the annotated image to the tab with all the index
+    global state
+    global state_lock
+    state_lock.acquire()
+    state.__init__()
+    state_lock.release()
+    seconds = 0
+    while state.ranking is None:
+        print(f'been waiting for ranking for {seconds}s...')
+        seconds += 1
+        time.sleep(1)
+    return {"success": True}
+
+
 
 
 @app.get("/hello")
@@ -76,6 +92,7 @@ async def helloworld():
 def get_next_img():
     global state
     global state_lock
+    time.sleep(0.3)
     for (image_path, prob) in state.ranking:  # get image from ranking
         if (image_path not in state.annotations) and (image_path != state.next_to_annotate[0][0] if isinstance(state.next_to_annotate, list) and len(state.next_to_annotate) else True):
             break
@@ -94,6 +111,7 @@ def return_path_prob(image_path: str, prob:int):
         image_path, headers={"image_path": image_path, "prob": str(prob)}
     )
     response.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+    print(image_path)
     return response
 
 
@@ -101,6 +119,7 @@ def return_path_prob(image_path: str, prob:int):
 async def add_annotation(request: Request):
     global state
     global state_lock
+    # time.sleep(0.3)
     # get the image_index and is_positive from the request
     body = await request.json()
     image_path = body['image_path']
@@ -127,25 +146,12 @@ async def add_annotation(request: Request):
     # print('state.annotations', state.annotations)
     return {"success": True}
 
-# @app.get('/reset_everything')
-# async def reset_everything(request: Request):
-#     #add the tab with the annotated image to the tab with all the index
-#     global state
-#     global state_lock
-#     state_lock.acquire()
-#     #clear the tab with the annotated image
-#     state.annotated = []
-#     #clear the json
-#     state.annotations = {}
-#     state.nb_true = sum(state.annotations.values())
-#     state_lock.release()
-#     safely_write(annfilepath, state.annotations)
-
 
 @app.get('/undo_annotation')
 async def undo_annotation():
     global state
     global state_lock
+    # time.sleep(0.5)
     #store the annotated image index in a tab (not in this function)
     #take the last one
     previous_image_path, previous_prob = state.annotated[-1]
@@ -165,6 +171,7 @@ async def undo_annotation():
 
 @app.get("/count_images")
 def count_images():
+    # time.sleep(1)
     try:
         num_images = len(state.dataset) 
         num_images_annotated = len(state.annotations)
@@ -176,7 +183,6 @@ def count_images():
         return {"error": str(e)}
 
 templates = Jinja2Templates(directory="../frontend/")
-
 app.mount("/", StaticFiles(directory="../frontend/", html=True), name="frontend")
 
 

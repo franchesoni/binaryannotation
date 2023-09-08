@@ -53,6 +53,19 @@ function App() {
       });
   }
 
+  const reset = async () => {
+    // send a get request to `reset_state`
+    await fetch(fetchUrl + 'reset_state')
+    .then(response => {
+      return response.json();
+    })
+    .then(data => {
+      console.log(data);
+    })
+    .catch(error => console.error('Error:', error));
+  }
+
+
   const preloadNextImage = async () => {
     await fetch(fetchUrl + 'get_next_img')
     .then(response => {
@@ -86,10 +99,9 @@ function App() {
     else if (label == false && skipped == false) {
       setNumberOfFalse(numberOfFalse + 1)
     }
-    setFetchInProgress(true)
     setPreviousImgPath(imgPath)
-    // setPreviousUrlImg(urlImg)
     nextToCurrentImg()
+    setFetchInProgress(true)
     await fetch(fetchUrl + 'add_annotation', {
       method: 'POST',
       headers: {
@@ -136,14 +148,24 @@ function App() {
   //=================================================================\\
   //UseEffect activated when the user refresh the page to have the first image and the number of images to annotate\\
   useEffect(() =>{
-    getImage() 
-    preloadNextImage()
-    getNumberImages()
+    console.log('resetting...')
+    // set tiltle element to have "wait..." as text
+    const titleElement = document.getElementById('appTitle');
+    titleElement.innerText = 'Wait...';
+    reset().
+    then(() => {getImage()
+      preloadNextImage()
+      getNumberImages()})
+      .then(() => {
+    titleElement.innerText = 'Binary annotation'
+        console.log('done resetting')})
   },[]);
   useEffect(() => {
-    console.log(imgPath)
-    console.log(nextImgPath)
-  }, [imgPath, nextImgPath]);
+    console.log('new img path' + imgPath)
+  }, [imgPath]);
+  useEffect(() => {
+    console.log('new nextImg path' + nextImgPath)
+  }, [nextImgPath]);
   //=================================================================\\
   //UseEffect to change the color of the buttons according to the probability\\
   useEffect(() => {
@@ -160,10 +182,11 @@ function App() {
   //=================================================================\\
   //Simple function to get previous image and index to undo the last annotation\\
   const undoAnnotation = () => {
-    if (annotatedImages === 0){
+    if (fetchInProgress | (annotatedImages === 0)) {
       return
     }
     
+    // setFetchInProgress(true)
     fetch(fetchUrl + 'undo_annotation')
       .then(response => {
         setImgPath(response.headers.get('image_path'))
@@ -174,7 +197,8 @@ function App() {
       })
       .then(({blob}) => {
         setUrlImg(URL.createObjectURL(blob))
-      });
+      })
+      // .then(() => setFetchInProgress(false));
     preloadNextImage()
     getNumberImages()
   }
@@ -318,7 +342,7 @@ function App() {
     <div className="App">
       <header className="App-header">
         <img className='App-logo-borelli' src="/images/logoBorelli.png"/>
-        <h1 className='App-title'>Binary annotation</h1>
+        <h1 className='App-title' id='appTitle'>Binary Annotation</h1>
         <h3 className='App-annotated-images'> Annotated images: {annotatedImages} / {numberOfImages}</h3>
         <p className='App-true-false-annotated'> {numberOfTrue} true / {numberOfFalse} false</p>
         <p className='App-cronometer'>{seconds} seconds</p>
@@ -342,11 +366,21 @@ function App() {
           </div>
         )}
         {imageSrc && (
-          <div style={{display:'flex', alignItems:'center', justifyContent: 'space-between'}}>
-            <img className="image previous" alt="Previous Image" src={imageSrc}/>
-            <img className='image main' src={imageSrc}/>
-            <img className="image next" src={nextImageSrc} alt="Next Image"/>
+          // <div style={{display:'flex', alignItems:'center', justifyContent: 'center'}}>
+          //   {/* <img className="image previous" alt="Previous Image" src={imageSrc}/> */}
+          //   <img className='image main' src={imageSrc}/>
+          //   <img className="image next" src={nextImageSrc} alt="Next Image" style={{marginLeft: '10px'}}/>
+          // </div>
+          <div style={{display:'flex', justifyContent: 'space-between'}}>
+            <div style={{flex: 1}}></div>
+            <div style={{flex: 1, display:'flex', alignItems:'center', justifyContent: 'center'}}>
+              <img className='image main' src={imageSrc}/>
+            </div>
+            <div style={{flex: 1, display:'flex', alignItems:'center', justifyContent: 'flex-end'}}>
+              <img className="image next" src={nextImageSrc} alt="Next Image" />
+            </div>
           </div>
+
         )}
         <div className='App-container-sliders'>
           <Slider

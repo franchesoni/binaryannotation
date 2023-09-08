@@ -135,16 +135,16 @@
   filter:contrast(var(--contrastImg)) brightness(var(--brightnessImg))
 }
 
-.image.previous,
+/* .image.previous, */
 .image.next {
-  width: 20%;
+  width: 224px;
 }
 
 .image.main {
-  width: 60%;
+  /* width: 60%; */
   opacity: 1;
-  width: 400px;
-  height:450px;
+  width: 644px;
+  height: 644px;
 }
 
 .image:hover {
@@ -154,3 +154,4 @@
 .App-container-sliders {
   display: flex;
 }
+
