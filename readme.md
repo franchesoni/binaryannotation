@@ -1,23 +1,24 @@
-# Intelligent Annotation - Binary Classification
+# 🔥 Intelligent Annotation - Binary Classification 🔥
 ![_8f2ba80f-7689-4327-84f7-78d8d6e4bd5e](https://github.com/franchesoni/binaryannotation/assets/24411007/08b53d80-8a5e-4df9-84da-a0e6fac6c34b)
-This tool allows you to more quickly annotate an image dataset with binary classes leveraging AI. Our app is **MINIMALISTIC**.
+This tool allows you to more quickly annotate an image dataset with binary classes leveraging AI.
 ---
 # FEATURES:
-- **active learning**
-- **automatic mode**
-- **contrast & brightness** change
-- **resume** annotation sessions
-- **export** your predictor
-- online annotation **performance statistics**
+- 🤖 **active learning**
+- 🤖 **automatic mode**
+- 🖌️ **contrast & brightness** change
+- 💾 **resume** annotation sessions
+- 🚀 **export** your predictor
+- ⏲️ online annotation **performance statistics**
   
 
 
 # Summary
 ## Why should you use this app?
-This is the best we have come up with regarding annotation speed for binary classification of images. Surprisingly, it's extremely simple.
-We have considered active learning, semi-supervised learning, showing images in batches, run length encoding, mathematically optimal orderings. But we found that the good old supervised learning and entropy (balanced data) or max-probability (unbalanced data) active learning is the best.
-On top, the best user experience is either labeling as positive or negative manually, or having the machine label everything as negative if you didn't say positive before some configurable time (the AUTO mode).
-Because a model is trained continuously on the background to help you with Intelligent Annotation (IA), once you're done annotating or find that the model is always right, you can export it or let it annotate the whole data. Thus this is a **human-in-the-loop learning solution**.
+- 🪵 Our app is **MINIMALISTIC** because minimalism is the best we have come up with regarding annotation speed for binary classification of images. The extremely simple works great.
+- 🧮 We have **considered lots of sophistication**: active learning, semi-supervised learning, showing images in batches, run length encoding, mathematically optimal orderings.
+- 🏆 But we found that the good old **supervised learning** and **entropy** (balanced data) or **max-probability** (unbalanced data) active learning is the best. 🏆
+- 🤗 On top, the best user experience is either labeling as positive or negative manually, or having the machine label everything as negative if you didn't say positive before some configurable time (the AUTO mode).
+- 🎁 Because a model is trained continuously on the background to help you with Intelligent Annotation (IA), once you're done annotating or find that the model is always right, you can export it or let it annotate the whole data. Thus this is a **human-in-the-loop learning solution**.
 
 ## Our usecase
 By default it's designed to annotate a large dataset of images with binary classes. In particular we assume that the positive class is the minority class.
