@@ -54,11 +54,6 @@ def continuously_update_ranking(rankingpath=rankingpath):
 
 process_thread = threading.Thread(target=continuously_update_ranking)
 process_thread.start()
-# seconds = 0
-# while state.ranking is None:
-#     print(f'been waiting for ranking for {seconds}s...')
-#     seconds += 1
-#     time.sleep(1)
 
 app = FastAPI(
     title="Cat or Dog?",
@@ -92,7 +87,6 @@ async def helloworld():
 def get_next_img():
     global state
     global state_lock
-    time.sleep(0.3)
     for (image_path, prob) in state.ranking:  # get image from ranking
         if (image_path not in state.annotations) and (image_path != state.next_to_annotate[0][0] if isinstance(state.next_to_annotate, list) and len(state.next_to_annotate) else True):
             break
@@ -119,7 +113,6 @@ def return_path_prob(image_path: str, prob:int):
 async def add_annotation(request: Request):
     global state
     global state_lock
-    # time.sleep(0.3)
     # get the image_index and is_positive from the request
     body = await request.json()
     image_path = body['image_path']
@@ -151,7 +144,6 @@ async def add_annotation(request: Request):
 async def undo_annotation():
     global state
     global state_lock
-    # time.sleep(0.5)
     #store the annotated image index in a tab (not in this function)
     #take the last one
     previous_image_path, previous_prob = state.annotated[-1]
@@ -171,7 +163,6 @@ async def undo_annotation():
 
 @app.get("/count_images")
 def count_images():
-    # time.sleep(1)
     try:
         num_images = len(state.dataset) 
         num_images_annotated = len(state.annotations)
