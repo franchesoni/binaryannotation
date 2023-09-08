@@ -99,8 +99,8 @@ function App() {
     else if (label == false && skipped == false) {
       setNumberOfFalse(numberOfFalse + 1)
     }
-    setPreviousImgPath(imgPath)
     nextToCurrentImg()
+    console.log('annotate image pressed and accepted!')
     setFetchInProgress(true)
     await fetch(fetchUrl + 'add_annotation', {
       method: 'POST',
@@ -118,11 +118,17 @@ function App() {
       })
       // .then (() => {nextToCurrentImg()})
       .then (() => setNextImgPath(null))
-      .then(() => {preloadNextImage()})
-      
+
       .then(() => setAnnotatedImages(annotatedImages + 1))
+      .then(() => {
+        preloadNextImage()
+        .then(() => {
+          setFetchInProgress(false)
+        console.log('annotate image done!')
+        })
+      })
       .catch(error => console.error('Error:', error))
-      .finally(() => setFetchInProgress(false));
+    console.log('annotate image dispatched!')
   }
   //=================================================================\\
   //Third fetch function to get the number of images to annotate\\
@@ -161,10 +167,10 @@ function App() {
         console.log('done resetting')})
   },[]);
   useEffect(() => {
-    console.log('new img path' + imgPath)
+    console.log('new img path:\n' + imgPath)
   }, [imgPath]);
   useEffect(() => {
-    console.log('new nextImg path' + nextImgPath)
+    console.log('new nextImg path:\n' + nextImgPath)
   }, [nextImgPath]);
   //=================================================================\\
   //UseEffect to change the color of the buttons according to the probability\\
@@ -181,13 +187,14 @@ function App() {
   }, [urlImg, nextUrlImg]);
   //=================================================================\\
   //Simple function to get previous image and index to undo the last annotation\\
-  const undoAnnotation = () => {
+  const undoAnnotation = async () => {
     if (fetchInProgress | (annotatedImages === 0)) {
       return
     }
+    console.log('undo annotation pressed and accepted!')
     
-    // setFetchInProgress(true)
-    fetch(fetchUrl + 'undo_annotation')
+    setFetchInProgress(true)
+    await fetch(fetchUrl + 'undo_annotation')
       .then(response => {
         setImgPath(response.headers.get('image_path'))
         setImgProb(response.headers.get('prob'))
@@ -198,9 +205,17 @@ function App() {
       .then(({blob}) => {
         setUrlImg(URL.createObjectURL(blob))
       })
-      // .then(() => setFetchInProgress(false));
-    preloadNextImage()
-    getNumberImages()
+      .then(() => {
+        preloadNextImage()
+        .then(() => {
+          getNumberImages()
+          .then(() => {
+            setFetchInProgress(false)
+            console.log('undo annotation done!')
+          });
+        });
+      });
+    console.log('all undo annotation dispatched!')
   }
   //=================================================================\\
   //Function to reset the annotations\\
@@ -366,21 +381,7 @@ function App() {
           </div>
         )}
         {imageSrc && (
-          // <div style={{display:'flex', alignItems:'center', justifyContent: 'center'}}>
-          //   {/* <img className="image previous" alt="Previous Image" src={imageSrc}/> */}
-          //   <img className='image main' src={imageSrc}/>
-          //   <img className="image next" src={nextImageSrc} alt="Next Image" style={{marginLeft: '10px'}}/>
-          // </div>
-          <div style={{display:'flex', justifyContent: 'space-between'}}>
-            <div style={{flex: 1}}></div>
-            <div style={{flex: 1, display:'flex', alignItems:'center', justifyContent: 'center'}}>
-              <img className='image main' src={imageSrc}/>
-            </div>
-            <div style={{flex: 1, display:'flex', alignItems:'center', justifyContent: 'flex-end'}}>
-              <img className="image next" src={nextImageSrc} alt="Next Image" />
-            </div>
-          </div>
-
+            <img className='image main' src={imageSrc}/>
         )}
         <div className='App-container-sliders'>
           <Slider
