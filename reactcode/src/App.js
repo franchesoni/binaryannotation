@@ -205,18 +205,13 @@ function App() {
       .then(({blob}) => {
         setUrlImg(URL.createObjectURL(blob))
       })
+      .then(() => {preloadNextImage()})
+      .then(() => {getNumberImages()})
       .then(() => {
-        preloadNextImage()
-        .then(() => {
-          getNumberImages()
-          .then(() => {
-            setFetchInProgress(false)
-            console.log('undo annotation done!')
-          });
-        });
+        setFetchInProgress(false)
+        console.log('undo annotation done!')
       });
-    console.log('all undo annotation dispatched!')
-  }
+    };
   //=================================================================\\
   //Function to reset the annotations\\
   const resetAnnotations = () => {
@@ -303,7 +298,6 @@ function App() {
   //UseEffect to start the timer\\
   useEffect(() => {
     let interval = null;
-    console.log('annotation: ' + annotation)
     if (isActive) {
       interval = setInterval(() => {
         setSeconds((prevSeconds) => prevSeconds + 1);
