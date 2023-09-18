@@ -205,13 +205,18 @@ function App() {
       .then(({blob}) => {
         setUrlImg(URL.createObjectURL(blob))
       })
-      .then(() => {preloadNextImage()})
-      .then(() => {getNumberImages()})
       .then(() => {
-        setFetchInProgress(false)
-        console.log('undo annotation done!')
+        preloadNextImage()
+        .then(() => {
+          getNumberImages()
+          .then(() => {
+            setFetchInProgress(false)
+            console.log('undo annotation done!')
+          });
+        });
       });
-    };
+    console.log('all undo annotation dispatched!')
+  }
   //=================================================================\\
   //Function to reset the annotations\\
   const resetAnnotations = () => {
@@ -345,7 +350,7 @@ function App() {
     return () => {
       clearInterval(interval); // Nettoyage de l'intervalle lors de la suppression du composant
     };
-  }, [imgPath, autoMode, annotation, autoModeSpeed, nextImgPath, nextUrlImg, urlImg]);
+  }, [imgPath, autoMode, annotation, autoModeSpeed, nextImgPath, nextUrlImg, urlImg, fetchInProgress]);
 
   return (
     <div className="App">
