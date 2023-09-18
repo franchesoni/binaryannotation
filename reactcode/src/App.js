@@ -266,6 +266,9 @@ function App() {
         }
         else if (event.key === 'm') {
           setAutoModeSpeed(0)
+        } else if (event.key === 's') {
+          setIsActive(true);
+          annotateImage(true, false);
         }
       }
       
